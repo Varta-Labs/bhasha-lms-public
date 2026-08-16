@@ -1,6 +1,8 @@
 # Copyright (c) 2021, FOSS United and Contributors
 # See license.txt
 
+import json
+
 import frappe
 from frappe.utils import getdate, to_timedelta
 
@@ -25,6 +27,7 @@ from lms.lms.utils import (
 	has_moderator_role,
 	has_student_role,
 	is_instructor,
+	prepare_slide_decks,
 	slugify,
 )
 
@@ -86,6 +89,31 @@ class TestLMSUtils(BaseTestUtils):
 		for lesson in lessons:
 			expected_url = get_lms_route(f"courses/{self.course.name}/learn/{lesson.number}")
 			self.assertEqual(get_lesson_url(self.course.name, lesson.number), expected_url)
+
+	def test_prepare_slide_decks_hides_google_url(self):
+		content = json.dumps(
+			{
+				"blocks": [
+					{
+						"type": "embed",
+						"data": {
+							"service": "slidesPublic",
+							"source": "https://docs.google.com/presentation/d/deck_123/edit",
+							"embed": "https://docs.google.com/presentation/d/deck_123/embed",
+							"caption": "Lesson slides",
+						},
+					}
+				]
+			}
+		)
+
+		prepared = json.loads(prepare_slide_decks(content, "course/name", 2, 3))
+		block = prepared["blocks"][0]
+		self.assertEqual(block["type"], "slideDeck")
+		self.assertEqual(block["data"]["caption"], "Lesson slides")
+		self.assertIn("course=course%2Fname", block["data"]["url"])
+		self.assertIn("chapter=2", block["data"]["url"])
+		self.assertNotIn("docs.google.com", json.dumps(block))
 
 	def test_is_instructor(self):
 		frappe.session.user = "frappe@example.com"

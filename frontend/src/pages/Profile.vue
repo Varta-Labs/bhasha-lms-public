@@ -117,16 +117,27 @@
 						/>
 					</div>
 				</div>
-				<Button
+				<div
 					v-if="isSessionUser() && !readOnlyMode"
-					class="bhasha-profile-edit mt-3 sm:mt-0 md:ms-auto"
-					@click="editProfile()"
+					class="bhasha-profile-actions mt-3 sm:mt-0 md:ms-auto"
 				>
-					<template #prefix>
-						<Edit class="w-4 h-4 stroke-1.5 text-ink-gray-7" />
-					</template>
-					{{ __('Edit Profile') }}
-				</Button>
+					<Button
+						class="bhasha-profile-edit"
+						:loading="resettingPassword"
+						@click="resetPassword()"
+					>
+						<template #prefix>
+							<KeyRound class="w-4 h-4 stroke-1.5 text-ink-gray-7" />
+						</template>
+						{{ __('Reset Password') }}
+					</Button>
+					<Button class="bhasha-profile-edit" @click="editProfile()">
+						<template #prefix>
+							<Edit class="w-4 h-4 stroke-1.5 text-ink-gray-7" />
+						</template>
+						{{ __('Edit Profile') }}
+					</Button>
+				</div>
 			</section>
 
 			<div class="bhasha-profile-tabs mb-4 mt-6">
@@ -164,6 +175,7 @@ import {
 	BadgeCheckIcon,
 	Edit,
 	Github,
+	KeyRound,
 	Linkedin,
 	RefreshCcw,
 	Twitter,
@@ -181,6 +193,7 @@ const route = useRoute()
 const router = useRouter()
 const activeTab = ref('')
 const showProfileModal = ref(false)
+const resettingPassword = ref(false)
 const readOnlyMode = window.read_only_mode
 
 const props = defineProps({
@@ -252,6 +265,24 @@ watch(
 
 const editProfile = () => {
 	showProfileModal.value = true
+}
+
+const resetPassword = async () => {
+	if (!profile.data?.name || resettingPassword.value) return
+	resettingPassword.value = true
+	try {
+		await call('frappe.core.doctype.user.user.reset_password', {
+			user: profile.data.name,
+		})
+		toast.success(
+			__('Password reset instructions have been sent to your email.'),
+		)
+	} catch (error) {
+		toast.error(__('Unable to send password reset instructions.'))
+		console.error(error)
+	} finally {
+		resettingPassword.value = false
+	}
 }
 
 const isSessionUser = () => {
@@ -401,6 +432,13 @@ usePageMeta(() => {
 	background: #fff !important;
 	color: #4a38c2 !important;
 	font-weight: 700 !important;
+}
+
+.bhasha-profile-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.65rem;
 }
 
 .bhasha-profile-tabs {

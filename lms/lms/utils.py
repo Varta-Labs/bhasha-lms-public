@@ -1,6 +1,7 @@
 import hashlib
 import json
 import re
+from urllib.parse import urlencode
 
 import frappe
 import requests
@@ -34,6 +35,10 @@ from lms.lms.md import find_macros
 
 RE_SLUG_NOTALLOWED = re.compile("[^a-z0-9]+")
 LMS_ROLES = ["Moderator", "Course Creator", "Batch Evaluator", "LMS Student"]
+GOOGLE_SLIDES_ID_PATTERN = re.compile(
+	r"^https://docs\.google\.com/presentation/d/([A-Za-z0-9_-]+)/"
+)
+MAX_SLIDE_DECK_BYTES = 50 * 1024 * 1024
 
 
 def get_lms_path():
@@ -1246,7 +1251,119 @@ def get_lesson(course: str, chapter: int, lesson: int) -> dict:
 	lesson_details.paid_certificate = course_info.paid_certificate
 	lesson_details.disable_self_learning = course_info.disable_self_learning
 	lesson_details.videos = get_video_details(lesson_name)
+	lesson_details.content = prepare_slide_decks(lesson_details.content, course, chapter, lesson)
 	return lesson_details
+
+
+def prepare_slide_decks(content: str, course: str, chapter: int, lesson: int) -> str:
+	"""Replace Google embeds with an LMS-hosted slide viewer definition.
+
+	The learner response contains only the protected LMS endpoint. The original
+	Google URL remains server-side in the Course Lesson document.
+	"""
+	if not content:
+		return content
+
+	try:
+		payload = json.loads(content)
+	except (TypeError, ValueError):
+		return content
+
+	blocks = payload.get("blocks")
+	if not isinstance(blocks, list):
+		return content
+
+	changed = False
+	for block_index, block in enumerate(blocks):
+		if not _is_google_slide_block(block):
+			continue
+		data = block.get("data") or {}
+		query = urlencode(
+			{
+				"course": course,
+				"chapter": chapter,
+				"lesson": lesson,
+				"block": block_index,
+			}
+		)
+		block["type"] = "slideDeck"
+		block["data"] = {
+			"url": f"/api/method/lms.lms.utils.get_lesson_slide_deck?{query}",
+			"caption": data.get("caption"),
+		}
+		changed = True
+
+	return json.dumps(payload, ensure_ascii=False) if changed else content
+
+
+def _is_google_slide_block(block: dict) -> bool:
+	return (
+		isinstance(block, dict)
+		and block.get("type") == "embed"
+		and (block.get("data") or {}).get("service") in {"slides", "slidesPublic"}
+		and bool(_get_google_slides_id(block))
+	)
+
+
+def _get_google_slides_id(block: dict) -> str | None:
+	data = block.get("data") if isinstance(block, dict) else None
+	if not isinstance(data, dict):
+		return None
+	for field in ("source", "embed"):
+		value = data.get(field)
+		if not isinstance(value, str):
+			continue
+		match = GOOGLE_SLIDES_ID_PATTERN.match(value)
+		if match:
+			return match.group(1)
+	return None
+
+
+@frappe.whitelist(allow_guest=True)
+@rate_limit(limit=120, seconds=60 * 60)
+def get_lesson_slide_deck(course: str, chapter: int, lesson: int, block: int):
+	"""Proxy a permitted lesson's Google presentation as a PDF."""
+	lesson_details = get_lesson(course, chapter, lesson)
+	if not lesson_details or lesson_details.get("no_preview"):
+		frappe.throw(_("You do not have access to this lesson."), frappe.PermissionError)
+
+	content = frappe.db.get_value("Course Lesson", lesson_details.name, "content")
+	try:
+		blocks = json.loads(content or "{}").get("blocks", [])
+		block_data = blocks[cint(block)]
+	except (AttributeError, IndexError, TypeError, ValueError):
+		frappe.throw(_("Presentation not found."), frappe.DoesNotExistError)
+
+	presentation_id = _get_google_slides_id(block_data)
+	if not _is_google_slide_block(block_data) or not presentation_id:
+		frappe.throw(_("Presentation not found."), frappe.DoesNotExistError)
+
+	cache_key = f"lms:slide-deck:{presentation_id}"
+	pdf = frappe.cache.get_value(cache_key, expires=True)
+	downloaded = not pdf
+	if not pdf:
+		try:
+			response = requests.get(
+				f"https://docs.google.com/presentation/d/{presentation_id}/export/pdf",
+				headers={"User-Agent": "Bhasha LMS slide viewer"},
+				timeout=30,
+			)
+			response.raise_for_status()
+		except requests.RequestException:
+			frappe.log_error(title="Google Slides export failed", message=frappe.get_traceback())
+			frappe.throw(_("The presentation could not be loaded right now. Please try again."))
+		pdf = response.content
+
+	if not pdf.startswith(b"%PDF") or len(pdf) > MAX_SLIDE_DECK_BYTES:
+		frappe.throw(_("The presentation export was invalid or too large."))
+	if downloaded:
+		frappe.cache.set_value(cache_key, pdf, expires_in_sec=15 * 60)
+
+	frappe.local.response.filename = "lesson-presentation.pdf"
+	frappe.local.response.filecontent = pdf
+	frappe.local.response.type = "download"
+	frappe.local.response.content_type = "application/pdf"
+	frappe.local.response.display_content_as = "inline"
 
 
 def get_video_details(lesson_name: str) -> list:

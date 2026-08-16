@@ -20,6 +20,7 @@ import Table from '@editorjs/table'
 import Plyr from 'plyr'
 import 'plyr/dist/plyr.css'
 import DOMPurify from 'dompurify'
+import SlideDeck from '@/utils/slideDeck'
 
 const readOnlyMode = window.read_only_mode
 
@@ -243,7 +244,7 @@ export function getEditorTools() {
 							window.innerWidth < 640
 								? 'clamp(20rem, 60svh, 30rem)'
 								: '30rem'
-						} border: 1px solid #D3D3D3; border-radius: 12px; margin: 1rem 0;' frameborder='0' allowfullscreen='true'></iframe>`,
+						}; border: 1px solid #D3D3D3; border-radius: 12px; margin: 1rem 0;' frameborder='0' allowfullscreen='true'></iframe>`,
 					},
 					codesandbox: {
 						regex: /^https:\/\/codesandbox\.io\/(?:(?:p\/(?:sandbox|devbox)\/)|(?:embed\/)|(?:s\/))?([A-Za-z0-9_-]+)(?:[\/\?].*)?$/,
@@ -254,6 +255,7 @@ export function getEditorTools() {
 				},
 			},
 		},
+		slideDeck: SlideDeck,
 	}
 }
 

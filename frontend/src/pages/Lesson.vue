@@ -1300,6 +1300,112 @@ usePageMeta(() => {
 	display: none;
 }
 
+.bhasha-slide-deck {
+	width: 100%;
+	overflow: hidden;
+	margin: 1rem 0;
+	border: 1px solid #d3d3d3;
+	border-radius: 0.8rem;
+	background: #fff;
+}
+
+.bhasha-slide-deck__stage {
+	display: flex;
+	width: 100%;
+	min-height: 10rem;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	background: #fff;
+}
+
+.bhasha-slide-deck__stage.is-loading {
+	aspect-ratio: 16 / 9;
+}
+
+.bhasha-slide-deck__canvas {
+	display: block;
+	max-width: 100%;
+	background: #fff;
+}
+
+.bhasha-slide-deck__status {
+	padding: 2rem;
+	color: var(--bhasha-text-muted);
+	font-size: 0.9rem;
+	text-align: center;
+}
+
+.bhasha-slide-deck__controls {
+	display: grid;
+	grid-template-columns: 2.75rem 1fr 2.75rem 2.75rem;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.55rem;
+	border-top: 1px solid var(--bhasha-border);
+	background: #fff;
+}
+
+.bhasha-slide-deck__button {
+	display: inline-flex;
+	width: 2.75rem;
+	height: 2.5rem;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--bhasha-border);
+	border-radius: 0.6rem;
+	background: #fff;
+	color: var(--bhasha-text);
+	font-size: 1.15rem;
+	line-height: 1;
+}
+
+.bhasha-slide-deck__button:hover:not(:disabled) {
+	border-color: var(--bhasha-border-brand);
+	background: var(--bhasha-50);
+	color: var(--bhasha-700);
+}
+
+.bhasha-slide-deck__button:disabled {
+	cursor: not-allowed;
+	opacity: 0.35;
+}
+
+.bhasha-slide-deck__page-status {
+	color: var(--bhasha-text-muted);
+	font-size: 0.8rem;
+	font-weight: 700;
+	text-align: center;
+}
+
+.bhasha-slide-deck:fullscreen,
+.bhasha-slide-deck.is-fullscreen-fallback {
+	display: flex;
+	width: 100vw;
+	height: 100vh;
+	margin: 0;
+	flex-direction: column;
+	border: 0;
+	border-radius: 0;
+	background: #fff;
+}
+
+.bhasha-slide-deck:fullscreen .bhasha-slide-deck__stage,
+.bhasha-slide-deck.is-fullscreen-fallback .bhasha-slide-deck__stage {
+	min-height: 0;
+	flex: 1;
+}
+
+.bhasha-slide-deck.is-fullscreen-fallback {
+	position: fixed;
+	inset: 0;
+	z-index: 10000;
+}
+
+body.bhasha-slide-deck-open {
+	overflow: hidden;
+}
+
 .ce-block__content {
 	max-width: unset;
 }
@@ -1781,16 +1887,6 @@ usePageMeta(() => {
 	.bhasha-lesson-body .youtube-video {
 		height: auto !important;
 		aspect-ratio: 16 / 9;
-	}
-
-	.bhasha-lesson-body iframe[src*='docs.google.com/presentation/'] {
-		display: block;
-		width: 100% !important;
-		/* Google's mobile options menu is rendered inside the cross-origin
-		   iframe. Give it enough vertical room so its top is not clipped. */
-		height: clamp(20rem, 60svh, 30rem) !important;
-		aspect-ratio: auto;
-		background: #fff;
 	}
 
 	.bhasha-lesson-mobile-nav {

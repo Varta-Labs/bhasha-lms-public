@@ -191,6 +191,7 @@ website_route_rules = [
 ]
 
 website_redirects = [
+	{"source": "/", "target": f"/{get_lms_path()}/"},
 	{"source": "/update-profile", "target": "/edit-profile"},
 	{"source": "/courses", "target": f"/{get_lms_path()}/courses"},
 	{
