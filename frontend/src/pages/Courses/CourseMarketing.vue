@@ -53,10 +53,10 @@
 		<section class="guest-course__section guest-course__story">
 			<div class="guest-course__shell guest-course__story-grid">
 				<figure class="guest-course__story-art">
-					<img :src="communityImage" :alt="__('Three adults sharing a friendly conversation in a Bengaluru apartment community')" />
+					<img :src="communityImage" :alt="communityImageAlt" />
 				</figure>
 				<div>
-					<span class="guest-course__kicker">{{ __('Why Kannada matters') }}</span>
+					<span class="guest-course__kicker">{{ storyKicker }}</span>
 					<h2>{{ storyTitle }}</h2>
 					<p class="guest-course__story-lead">{{ storyLead }}</p>
 					<ul class="guest-course__story-points">
@@ -84,7 +84,7 @@
 					<p class="guest-course__quiet-callout">{{ __('Self-paced · Practical · Designed for adult beginners') }}</p>
 				</div>
 				<figure class="guest-course__story-art">
-					<img :src="guidedLearningImage" :alt="__('An adult learner practising Kannada with a trainer through a guided video lesson')" />
+					<img :src="guidedLearningImage" :alt="guidedLearningImageAlt" />
 				</figure>
 			</div>
 		</section>
@@ -129,12 +129,12 @@
 		<section class="guest-course__section guest-course__confidence">
 			<div class="guest-course__shell guest-course__story-grid">
 				<figure class="guest-course__story-art">
-					<img :src="confidenceImage" :alt="__('A Kannada learner confidently speaking with a local vegetable seller')" />
+					<img :src="confidenceImage" :alt="confidenceImageAlt" />
 				</figure>
 				<div>
 					<span class="guest-course__kicker">{{ __('Your first confident conversations') }}</span>
-					<h2>{{ __('Move from recognising words to replying in Kannada.') }}</h2>
-					<p class="guest-course__story-lead">{{ __('By the end of the course, you will have a practical foundation for simple, everyday spoken Kannada.') }}</p>
+					<h2>{{ confidenceTitle }}</h2>
+					<p class="guest-course__story-lead">{{ confidenceLead }}</p>
 					<ul class="guest-course__confidence-list">
 						<li v-for="item in confidenceItems" :key="item"><CheckCircle2 class="size-5" />{{ item }}</li>
 					</ul>
@@ -148,7 +148,7 @@
 				<header class="guest-course__section-header">
 					<span>{{ __('Trusted by adult learners') }}</span>
 					<h2>{{ __('Learning a new language can feel approachable.') }}</h2>
-					<p>{{ __('Hear from learners who have studied Kannada with Bhasha.io.') }}</p>
+					<p>{{ testimonialsLead }}</p>
 				</header>
 				<div class="guest-course__testimonial-grid">
 					<article v-for="testimonial in testimonials" :key="testimonial.name">
@@ -229,6 +229,35 @@ watch(
 
 const isKannadaCourse = computed(() =>
 	`${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('kannada'),
+)
+
+const courseLanguage = computed(() => {
+	const category = props.course.data?.category?.trim()
+	if (category && category.toLowerCase() !== 'languages') return category
+	const title = props.course.data?.title?.trim() || ''
+	return title.replace(/\s+(?:video\s+)?course$/i, '').trim() || __('the language')
+})
+
+const storyKicker = computed(() => __('Why {0} matters').format(courseLanguage.value))
+const communityImageAlt = computed(() =>
+	isKannadaCourse.value
+		? __('Three adults sharing a friendly conversation in a Bengaluru apartment community')
+		: __('Adults sharing a friendly conversation while practising {0}').format(courseLanguage.value),
+)
+const guidedLearningImageAlt = computed(() =>
+	__('An adult learner practising {0} with a trainer through a guided video lesson').format(courseLanguage.value),
+)
+const confidenceImageAlt = computed(() =>
+	__('A learner confidently using {0} in an everyday conversation').format(courseLanguage.value),
+)
+const confidenceTitle = computed(() =>
+	__('Move from recognising words to replying in {0}.').format(courseLanguage.value),
+)
+const confidenceLead = computed(() =>
+	__('By the end of the course, you will have a practical foundation for simple, everyday spoken {0}.').format(courseLanguage.value),
+)
+const testimonialsLead = computed(() =>
+	__('Hear from learners who have studied {0} with Bhasha.io.').format(courseLanguage.value),
 )
 
 const marketingTitle = computed(() =>
@@ -342,11 +371,11 @@ const storyPoints = [
 	{ title: __('Show respect'), copy: __('Connect with the language, culture, and people around you.') },
 ]
 
-const methodSteps = [
-	{ title: __('Watch the trainer teach'), copy: __('New Kannada words and phrases are introduced in context.') },
+const methodSteps = computed(() => [
+	{ title: __('Watch the trainer teach'), copy: __('New {0} words and phrases are introduced in context.').format(courseLanguage.value) },
 	{ title: __('Practise with the learner'), copy: __('Pause, repeat aloud, and learn as the learner improves.') },
 	{ title: __('Understand how it is used'), copy: __('Hear pronunciation corrections, usage notes, and conversations built step by step.') },
-]
+])
 
 const marketingModules = computed(() => {
 	if (!outline.data?.length) return []
@@ -356,27 +385,27 @@ const marketingModules = computed(() => {
 	}))
 })
 
-const confidenceItems = [
-	__('Introduce yourself in simple Kannada'),
+const confidenceItems = computed(() => [
+	__('Introduce yourself in simple {0}').format(courseLanguage.value),
 	__('Ask and answer common questions'),
 	__('Understand familiar spoken phrases'),
-	__('Build clear, simple Kannada sentences'),
-]
+	__('Build clear, simple {0} sentences').format(courseLanguage.value),
+])
 
 const testimonials = computed(() =>
 	props.course.data?.testimonials?.length ? props.course.data.testimonials : [],
 )
 
-const defaultFaqs = [
-	{ question: __('What will I be able to do after this course?'), answer: __('You will have a practical foundation for introducing yourself, asking and answering common questions, understanding familiar phrases, and speaking in simple Kannada sentences.') },
+const defaultFaqs = computed(() => [
+	{ question: __('What will I be able to do after this course?'), answer: __('You will have a practical foundation for introducing yourself, asking and answering common questions, understanding familiar phrases, and speaking in simple {0} sentences.').format(courseLanguage.value) },
 	{ question: __('How is the course taught?'), answer: __('You watch a trainer teach an adult learner on screen. The learner practises, the trainer corrects pronunciation and explains usage, and you pause and practise along with them.') },
 	{ question: __('Is this a live course?'), answer: __('No. It is a self-paced course you can access online. Pause, repeat, practise aloud, and move through the lessons on your own schedule.') },
-	{ question: __('Do I need to know Kannada grammar or script?'), answer: __('No. The course is made for adult beginners and focuses on practical spoken Kannada—not a heavy grammar-first or textbook-first approach.') },
+	{ question: __('Do I need to know {0} grammar or script?').format(courseLanguage.value), answer: __('No. The course is made for adult beginners and focuses on practical spoken {0}—not a heavy grammar-first or textbook-first approach.').format(courseLanguage.value) },
 	{ question: __('How do I get access after payment?'), answer: __('Enroll or create your account, complete payment through the LMS billing page, and your course access will be activated automatically.') },
-]
+])
 
 const faqs = computed(() =>
-	props.course.data?.faqs?.length ? props.course.data.faqs : defaultFaqs,
+	props.course.data?.faqs?.length ? props.course.data.faqs : defaultFaqs.value,
 )
 
 function initials(name: string) {
