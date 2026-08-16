@@ -4,9 +4,9 @@ const loadPdfJs = async () => {
 	if (!pdfJsPromise) {
 		pdfJsPromise = Promise.all([
 			import('pdfjs-dist'),
-			import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
+			import('pdfjs-dist/build/pdf.worker.min.mjs?worker'),
 		]).then(([pdfjs, worker]) => {
-			pdfjs.GlobalWorkerOptions.workerSrc = worker.default
+			pdfjs.GlobalWorkerOptions.workerPort = new worker.default()
 			return pdfjs
 		})
 	}
