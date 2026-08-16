@@ -22,10 +22,17 @@ DEFAULT_PUBLIC_URL = "https://learn.bhasha.io"
 EDITORJS_VERSION = "2.29.0"
 
 
-def _load_course_package(filename: str) -> dict:
+def _course_package_path(filename: str) -> Path:
 	if not re.fullmatch(r"[a-z0-9][a-z0-9-]*\.json", str(filename)):
 		raise ValueError("Course filename must be a lowercase slug ending in .json.")
-	path = Path(frappe.get_app_path("lms", "course_data", filename))
+	# Frappe scrubs every extra get_app_path component as a Python module name,
+	# which changes filename hyphens to underscores. Resolve the app first, then
+	# join the data path without normalization.
+	return Path(frappe.get_app_path("lms")) / "course_data" / filename
+
+
+def _load_course_package(filename: str) -> dict:
+	path = _course_package_path(filename)
 	with path.open(encoding="utf-8") as handle:
 		package = json.load(handle)
 	_validate_course_package(package)
