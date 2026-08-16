@@ -8329,10 +8329,6 @@ msgstr ""
 msgid "Video Statistics"
 msgstr ""
 
-#: frontend/src/pages/Lesson.vue:874
-msgid "Video failed to load — you can still mark this lesson as viewed."
-msgstr ""
-
 #: frontend/src/pages/JobDetail.vue:31
 msgid "View Applications"
 msgstr ""
@@ -9266,4 +9262,3 @@ msgstr ""
 #: lms/lms/workspace/learning/learning.json
 msgid "{} Published"
 msgstr ""
-

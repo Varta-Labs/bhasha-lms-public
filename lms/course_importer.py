@@ -354,15 +354,6 @@ def _lesson_content(lesson_definition: dict) -> dict:
 					"caption": slides.get("title") or lesson_definition["title"],
 				},
 			},
-			{
-				"type": "paragraph",
-				"data": {
-					"text": (
-						f'<a href="{html.escape(slides_url, quote=True)}" target="_blank" '
-						'rel="noopener noreferrer">Open the presentation in a new tab</a>'
-					)
-				},
-			},
 		]
 	)
 	return {"time": 0, "blocks": blocks, "version": EDITORJS_VERSION}

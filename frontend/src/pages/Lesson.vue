@@ -1052,9 +1052,6 @@ const fallbackToDwellTimer = (reason) => {
 	if (videoFallbackArmed) return
 	videoFallbackArmed = true
 	console.warn('[Lesson] video fallback engaged:', reason)
-	toast.warning(
-		__('Video failed to load — you can still mark this lesson as viewed.'),
-	)
 	clearInterval(timerInterval)
 	timer.value = 0
 	startTimer()
@@ -1789,8 +1786,10 @@ usePageMeta(() => {
 	.bhasha-lesson-body iframe[src*='docs.google.com/presentation/'] {
 		display: block;
 		width: 100% !important;
-		height: auto !important;
-		aspect-ratio: 16 / 9;
+		/* Google's mobile options menu is rendered inside the cross-origin
+		   iframe. Give it enough vertical room so its top is not clipped. */
+		height: clamp(20rem, 60svh, 30rem) !important;
+		aspect-ratio: auto;
 		background: #fff;
 	}
 

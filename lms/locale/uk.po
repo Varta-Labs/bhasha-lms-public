@@ -7357,10 +7357,6 @@ msgstr "Посилання для вбудовування відео"
 msgid "Video Statistics"
 msgstr "Статистика відео"
 
-#: frontend/src/pages/Lesson.vue:874
-msgid "Video failed to load — you can still mark this lesson as viewed."
-msgstr "Відео не вдалося завантажити — ви можете позначити цей урок як переглянутий."
-
 #: frontend/src/pages/JobDetail.vue:31
 msgid "View Applications"
 msgstr "Переглянути заявки"

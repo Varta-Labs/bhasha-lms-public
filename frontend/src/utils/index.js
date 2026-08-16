@@ -240,9 +240,9 @@ export function getEditorTools() {
 						embedUrl:
 							'https://docs.google.com/presentation/d/<%= remote_id %>/embed',
 						html: `<iframe style='width: 100%; height: ${
-							window.innerWidth < 640 ? 'auto' : '30rem'
-						}; ${
-							window.innerWidth < 640 ? 'aspect-ratio: 16 / 9;' : ''
+							window.innerWidth < 640
+								? 'clamp(20rem, 60svh, 30rem)'
+								: '30rem'
 						} border: 1px solid #D3D3D3; border-radius: 12px; margin: 1rem 0;' frameborder='0' allowfullscreen='true'></iframe>`,
 					},
 					codesandbox: {
@@ -718,6 +718,11 @@ const sanitizeJSON = (node) => {
 
 export const sanitizeEditorJs = (data) => {
 	if (!data || !Array.isArray(data.blocks)) return data
+	// Older imported lessons included an escape link below Google Slides.
+	// Keep students inside the LMS even before those lessons are re-imported.
+	data.blocks = data.blocks.filter(
+		(node) => !isExternalPresentationLink(node?.type, node?.data?.text),
+	)
 	for (const node of data.blocks) {
 		if (node && node.type !== 'code') {
 			node.data = sanitizeJSON(node.data)
@@ -725,6 +730,11 @@ export const sanitizeEditorJs = (data) => {
 	}
 	return data
 }
+
+const isExternalPresentationLink = (type, text) =>
+	type === 'paragraph' &&
+	typeof text === 'string' &&
+	text.includes('Open the presentation in a new tab')
 
 export const sanitizeHTML = (text) => {
 	text = DOMPurify.sanitize(decodeEntities(text), {
