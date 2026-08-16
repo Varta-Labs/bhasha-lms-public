@@ -1,0 +1,14 @@
+{% from "templates/emails/bhasha_auth.html" import auth_email %}
+{% set complete_signup_link = site_url ~ signup_form_link %}
+
+{% call auth_email(
+	_("Welcome to Bhasha"),
+	_("Complete Sign Up"),
+	complete_signup_link,
+	_("This sign-up link is intended only for the email address it was sent to.")
+) %}
+	<p style="margin: 0 0 12px;">{{ _("Hi") }},</p>
+	<p style="margin: 0;">
+		{{ _("Your invitation has been approved. Complete your Bhasha sign-up and choose a password to start learning.") }}
+	</p>
+{% endcall %}

@@ -1,0 +1,16 @@
+{% from "templates/emails/bhasha_auth.html" import auth_email %}
+
+{% call auth_email(
+	_("Welcome to Bhasha"),
+	_("Complete Registration"),
+	link,
+	_("This registration link is intended only for the email address it was sent to.")
+) %}
+	<p style="margin: 0 0 12px;">{{ _("Hi") }} {{ first_name | e }},</p>
+	<p style="margin: 0 0 12px;">
+		{{ _("Your Bhasha learning account is ready. Complete your registration to set a password and start learning.") }}
+	</p>
+	<p style="margin: 0;">
+		{{ _("Your login email is") }}: <strong style="color: #1f172b;">{{ user | e }}</strong>
+	</p>
+{% endcall %}

@@ -1,0 +1,746 @@
+.bhasha-batch-create-button {
+  min-height: 2.45rem;
+  padding-inline: 1rem !important;
+  border-radius: 9999px !important;
+  font-weight: 700;
+}
+
+.bhasha-batches-page {
+  padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 3vw, 2rem) 2.5rem;
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(129, 80, 223, 0.075),
+      transparent 23rem
+    ),
+    var(--bhasha-page);
+}
+
+.bhasha-batches-toolbar,
+.bhasha-batch-grid-shell,
+.bhasha-batches-empty {
+  width: min(100%, 80rem);
+  margin-inline: auto;
+}
+
+.bhasha-batches-toolbar {
+  margin-bottom: 1.5rem;
+  padding: clamp(1rem, 2vw, 1.35rem);
+  border: 1px solid var(--bhasha-border-brand);
+  border-radius: var(--bhasha-radius-card);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 30px rgba(61, 34, 111, 0.055);
+}
+
+.bhasha-batches-toolbar-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.bhasha-batches-title {
+  color: var(--bhasha-text);
+  font-family: var(--bhasha-font-display);
+  font-size: 1.25rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.bhasha-batches-description {
+  max-width: 60ch;
+  margin-top: 0.2rem;
+  color: var(--bhasha-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.bhasha-batch-result-count {
+  flex-shrink: 0;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--bhasha-border-brand);
+  border-radius: 9999px;
+  background: var(--bhasha-50);
+  color: var(--bhasha-700);
+  font-size: 0.75rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.bhasha-batch-tabs-scroll {
+  margin-inline: -0.1rem;
+  padding: 0.1rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.bhasha-batch-tabs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.bhasha-batch-tabs {
+  display: inline-flex;
+  min-width: max-content;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--bhasha-border-brand);
+  border-radius: 9999px;
+  background: var(--bhasha-50);
+}
+
+.bhasha-batch-tab {
+  min-height: 2.1rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 9999px;
+  color: var(--bhasha-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.bhasha-batch-tab:hover {
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--bhasha-700);
+}
+
+.bhasha-batch-tab.is-active {
+  background: linear-gradient(135deg, var(--bhasha-600), var(--bhasha-700));
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(101, 50, 197, 0.24);
+}
+
+.bhasha-batch-tab:active {
+  transform: scale(0.98);
+}
+
+.bhasha-batch-tab:focus-visible,
+.bhasha-batch-filter-toggle:focus-visible,
+.bhasha-batch-clear-filters:focus-visible,
+.bhasha-batch-search-clear:focus-visible {
+  outline: none;
+  box-shadow: var(--bhasha-focus-ring);
+}
+
+.bhasha-batch-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--bhasha-border-brand);
+}
+
+.bhasha-batch-search {
+  min-width: 14rem;
+  flex: 1 1 24rem;
+}
+
+.bhasha-batch-search input,
+.bhasha-batch-category-filter button {
+  background: var(--bhasha-surface);
+}
+
+.bhasha-batch-search-clear {
+  display: inline-grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  border-radius: 9999px;
+  color: var(--bhasha-text-muted);
+}
+
+.bhasha-batch-search-clear:hover {
+  background: var(--bhasha-100);
+  color: var(--bhasha-700);
+}
+
+.bhasha-batch-category-filter {
+  width: 12rem;
+  flex: 0 1 12rem;
+}
+
+.bhasha-batch-category-filter [data-slot='trigger'] .truncate {
+  display: block;
+  overflow: visible;
+  min-height: 1.6rem;
+  padding-block: 0.125rem 0.25rem;
+  line-height: 1.25rem;
+  text-overflow: clip;
+}
+
+.bhasha-batch-filter-toggle,
+.bhasha-batch-clear-filters {
+  display: inline-flex;
+  min-height: 2.4rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: var(--bhasha-radius-control);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.bhasha-batch-filter-toggle {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--bhasha-border);
+  background: var(--bhasha-surface);
+  color: var(--bhasha-text-muted);
+}
+
+.bhasha-batch-filter-toggle:hover,
+.bhasha-batch-filter-toggle.is-active {
+  border-color: var(--bhasha-border-brand);
+  background: var(--bhasha-50);
+  color: var(--bhasha-700);
+}
+
+.bhasha-batch-filter-toggle.is-active {
+  box-shadow: inset 0 0 0 1px rgba(101, 50, 197, 0.08);
+}
+
+.bhasha-batch-clear-filters {
+  padding: 0.4rem 0.3rem;
+  color: var(--bhasha-text-muted);
+}
+
+.bhasha-batch-clear-filters:hover {
+  color: var(--bhasha-700);
+}
+
+.bhasha-batch-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.15rem;
+}
+
+.bhasha-batch-grid > a {
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.bhasha-batches-empty {
+  display: flex;
+  min-height: min(26rem, calc(100vh - 17rem));
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  border: 1px dashed rgba(101, 50, 197, 0.22);
+  border-radius: var(--bhasha-radius-card);
+  background: rgba(255, 255, 255, 0.72);
+  text-align: center;
+}
+
+.bhasha-batches-empty-icon {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  margin-bottom: 1rem;
+  border-radius: 1rem;
+  background: var(--bhasha-100);
+  color: var(--bhasha-700);
+}
+
+.bhasha-batches-empty h2 {
+  color: var(--bhasha-text);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.bhasha-batches-empty p {
+  max-width: 34rem;
+  margin-top: 0.35rem;
+  color: var(--bhasha-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.bhasha-batch-load-more {
+  border-color: var(--bhasha-border-brand) !important;
+  background: var(--bhasha-surface) !important;
+  color: var(--bhasha-700) !important;
+}
+
+/* Batch cards */
+.bhasha-batch-card {
+  position: relative;
+  height: 100%;
+  min-height: 22rem;
+  overflow: hidden;
+  border: 1px solid var(--bhasha-border-brand);
+  border-radius: var(--bhasha-radius-card);
+  background: var(--bhasha-surface);
+  box-shadow: 0 7px 22px rgba(61, 34, 111, 0.045);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.bhasha-batch-card:hover {
+  border-color: rgba(101, 50, 197, 0.28);
+  box-shadow: 0 15px 34px rgba(61, 34, 111, 0.11);
+  transform: translateY(-2px);
+}
+
+.bhasha-batch-card-accent {
+  height: 0.32rem;
+  background: linear-gradient(
+    90deg,
+    var(--bhasha-600),
+    var(--bhasha-400) 65%,
+    var(--bhasha-200)
+  );
+}
+
+.bhasha-batch-card-body {
+  display: flex;
+  height: calc(100% - 0.32rem);
+  flex-direction: column;
+  padding: 1.2rem;
+}
+
+.bhasha-batch-card-topline {
+  display: flex;
+  min-height: 1.75rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.bhasha-batch-card-category {
+  overflow: hidden;
+  color: var(--bhasha-700);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bhasha-batch-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-inline-start: auto;
+}
+
+.bhasha-batch-card-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  font-size: 0.675rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.bhasha-batch-card-status.is-upcoming {
+  border-color: var(--bhasha-border-brand);
+  background: var(--bhasha-50);
+  color: var(--bhasha-700);
+}
+
+.bhasha-batch-card-status.is-active {
+  border-color: rgba(5, 150, 105, 0.18);
+  background: rgba(5, 150, 105, 0.08);
+  color: #047857;
+}
+
+.bhasha-batch-card-status.is-archived,
+.bhasha-batch-card-status.is-draft {
+  border-color: var(--bhasha-border);
+  background: #f5f3f7;
+  color: var(--bhasha-text-muted);
+}
+
+.bhasha-batch-card-status.is-sold-out {
+  border-color: rgba(220, 38, 38, 0.14);
+  background: rgba(220, 38, 38, 0.07);
+  color: #b91c1c;
+}
+
+.bhasha-batch-card-title {
+  margin-top: 0.55rem;
+  color: var(--bhasha-text);
+  font-family: var(--bhasha-font-display);
+  font-size: 1.1rem;
+  font-weight: 750;
+  letter-spacing: -0.018em;
+  line-height: 1.35;
+}
+
+.bhasha-batch-card-description {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 0.4rem;
+  color: var(--bhasha-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.bhasha-batch-card-schedule {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1.05rem;
+  padding: 0.85rem;
+  border: 1px solid var(--bhasha-border-brand);
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, var(--bhasha-50), #fff 75%);
+}
+
+.bhasha-batch-card-meta,
+.bhasha-batch-card-meta.flex {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--bhasha-text-muted);
+  font-size: 0.775rem;
+  line-height: 1.4;
+}
+
+.bhasha-batch-card-meta svg {
+  margin-inline-end: 0 !important;
+  color: var(--bhasha-600);
+}
+
+.bhasha-batch-card-details {
+  display: flex;
+  min-height: 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.bhasha-batch-card-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--bhasha-700);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.bhasha-batch-card-detail.is-available {
+  color: #047857;
+}
+
+.bhasha-batch-card-price {
+  margin-inline-start: auto;
+  color: var(--bhasha-text);
+  font-size: 0.8125rem;
+  font-weight: 750;
+}
+
+.bhasha-batch-card-footer {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--bhasha-border-brand);
+  color: var(--bhasha-text-muted);
+}
+
+.bhasha-batch-card-instructors {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.75rem;
+}
+
+.bhasha-batch-card-instructors > div:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bhasha-batch-card .avatar-group {
+  display: inline-flex;
+  align-items: center;
+}
+
+.bhasha-batch-card .avatar-group.overlap .avatar + .avatar {
+  margin-inline-start: -8px;
+}
+
+.bhasha-batch-card-footer > svg {
+  color: var(--bhasha-600);
+  transition: transform 160ms ease;
+}
+
+.bhasha-batch-card:hover .bhasha-batch-card-footer > svg {
+  transform: translate(2px, -2px);
+}
+
+/* New batch flow */
+[data-dialog='New Batch'] .dialog-content {
+  border: 1px solid var(--bhasha-border-brand);
+  border-radius: 1.5rem;
+  background: var(--bhasha-surface);
+  box-shadow:
+    0 26px 60px rgba(41, 24, 72, 0.2),
+    0 8px 22px rgba(41, 24, 72, 0.08);
+}
+
+[data-dialog='New Batch'] .dialog-content > div:first-child {
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(129, 80, 223, 0.08),
+      transparent 18rem
+    ),
+    var(--bhasha-surface);
+}
+
+[data-dialog='New Batch'] .dialog-content > div:last-child {
+  padding: 1rem clamp(1.25rem, 2.5vw, 2rem) 1.25rem;
+  border-top: 1px solid var(--bhasha-border-brand);
+  background: rgba(250, 249, 252, 0.8);
+}
+
+.bhasha-dialog-heading {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.875rem;
+}
+
+.bhasha-dialog-icon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--bhasha-border-brand);
+  border-radius: 0.875rem;
+  background: var(--bhasha-50);
+  color: var(--bhasha-700);
+}
+
+.bhasha-dialog-title {
+  color: var(--bhasha-text);
+  font-family: var(--bhasha-font-display);
+  font-size: 1.25rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.bhasha-dialog-description {
+  max-width: 56ch;
+  margin-top: 0.25rem;
+  color: var(--bhasha-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.bhasha-batch-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.bhasha-batch-form-section {
+  padding: 1rem;
+  border: 1px solid var(--bhasha-border-brand);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.bhasha-batch-form-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.bhasha-batch-form-section-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.65rem;
+  background: var(--bhasha-100);
+  color: var(--bhasha-700);
+}
+
+.bhasha-batch-form-section-heading h4 {
+  color: var(--bhasha-text);
+  font-family: var(--bhasha-font-display);
+  font-size: 0.925rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.bhasha-batch-form-section-heading p {
+  margin-top: 0.1rem;
+  color: var(--bhasha-text-muted);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.bhasha-batch-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.bhasha-dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.bhasha-dialog-primary,
+.bhasha-dialog-secondary {
+  min-height: 2.5rem;
+  padding-inline: 1.1rem;
+  border-radius: 9999px !important;
+  font-weight: 700;
+}
+
+.bhasha-dialog-secondary {
+  border-color: var(--bhasha-border-brand) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: var(--bhasha-700) !important;
+}
+
+.bhasha-dialog-secondary:hover {
+  border-color: var(--bhasha-300) !important;
+  background: var(--bhasha-50) !important;
+}
+
+html[data-theme='dark'] .bhasha-batches-page {
+  background: var(--surface-white);
+}
+
+html[data-theme='dark'] .bhasha-batches-toolbar,
+html[data-theme='dark'] .bhasha-batches-empty,
+html[data-theme='dark'] .bhasha-batch-card,
+html[data-theme='dark'] .bhasha-batch-form-section {
+  border-color: rgba(199, 174, 255, 0.16);
+  background: var(--surface-white);
+  box-shadow: none;
+}
+
+html[data-theme='dark'] .bhasha-batch-tabs,
+html[data-theme='dark'] .bhasha-batch-filter-toggle,
+html[data-theme='dark'] .bhasha-batch-card-schedule {
+  border-color: rgba(199, 174, 255, 0.16);
+  background: rgba(129, 80, 223, 0.1);
+}
+
+@media (min-width: 768px) {
+  .bhasha-batch-category-filter [data-slot='trigger'] {
+    height: 2.5rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .bhasha-batch-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bhasha-batch-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .bhasha-batches-page {
+    padding: 0.75rem 0.75rem 2rem;
+  }
+
+  .bhasha-batches-toolbar {
+    padding: 0.9rem;
+    border-radius: 1rem;
+  }
+
+  .bhasha-batch-filters {
+    flex-wrap: wrap;
+  }
+
+  .bhasha-batch-search {
+    min-width: 100%;
+    flex-basis: 100%;
+  }
+
+  .bhasha-batch-category-filter {
+    min-width: 0;
+    flex: 1 1 10rem;
+  }
+
+  [data-dialog='New Batch'] .dialog-content {
+    border-radius: 1.25rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .bhasha-batch-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bhasha-batch-card {
+    min-height: 20rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .bhasha-batches-toolbar-heading {
+    align-items: center;
+  }
+
+  .bhasha-batches-description {
+    display: none;
+  }
+
+  .bhasha-batch-category-filter {
+    flex-basis: 100%;
+  }
+
+  .bhasha-batch-filter-toggle {
+    flex: 1;
+  }
+
+  .bhasha-batch-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bhasha-batch-form-grid > .md\:col-span-2 {
+    grid-column: auto;
+  }
+
+  .bhasha-dialog-description {
+    max-width: 40ch;
+  }
+}

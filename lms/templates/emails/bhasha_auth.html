@@ -1,0 +1,34 @@
+{% macro auth_email(title, button_label, link, security_note=None) -%}
+<div data-bhasha-auth-email="true">
+	<div style="margin-bottom: 8px; color: #6532c5; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;">
+		{{ _("Bhasha Learning") }}
+	</div>
+	<h1 style="margin: 0 0 18px; color: #1f172b; font-size: 28px; font-weight: 750; letter-spacing: -0.035em; line-height: 1.2;">
+		{{ title }}
+	</h1>
+	<div style="color: #554d5d; font-size: 15px; line-height: 1.65;">
+		{{ caller() }}
+	</div>
+	<table border="0" cellpadding="0" cellspacing="0" style="margin: 26px 0 22px;">
+		<tr>
+			<td align="center" bgcolor="#6532c5" style="border-radius: 10px;">
+				<a href="{{ link }}" target="_blank" rel="nofollow noopener"
+					style="display: inline-block; padding: 13px 24px; border: 1px solid #6532c5; border-radius: 10px; background-color: #6532c5; color: #ffffff; font-size: 14px; font-weight: 700; line-height: 20px; text-decoration: none;">
+					{{ button_label }}
+				</a>
+			</td>
+		</tr>
+	</table>
+	<div style="padding: 14px 16px; border: 1px solid #eee7f7; border-radius: 10px; background-color: #faf8fd; color: #766e7d; font-size: 12px; line-height: 1.55;">
+		<div style="margin-bottom: 5px; font-weight: 650; color: #5f5667;">
+			{{ _("Button not working? Copy this link into your browser:") }}
+		</div>
+		<a href="{{ link }}" style="color: #6532c5; text-decoration: underline; word-break: break-all;">{{ link }}</a>
+	</div>
+	{% if security_note %}
+	<div style="margin-top: 20px; color: #82798a; font-size: 12px; line-height: 1.6;">
+		{{ security_note }}
+	</div>
+	{% endif %}
+</div>
+{%- endmacro %}

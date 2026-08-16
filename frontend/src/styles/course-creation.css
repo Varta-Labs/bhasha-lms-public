@@ -1,0 +1,101 @@
+[data-dialog='New Course'] .dialog-content,
+[data-dialog='Import Course from ZIP'] .dialog-content {
+	border: 1px solid var(--bhasha-border-brand);
+	border-radius: 1.5rem;
+	background: var(--bhasha-surface);
+	box-shadow:
+		0 26px 60px rgba(41, 24, 72, 0.2),
+		0 8px 22px rgba(41, 24, 72, 0.08);
+}
+
+[data-dialog='New Course'] .dialog-content > div:first-child,
+[data-dialog='Import Course from ZIP'] .dialog-content > div:first-child {
+	padding: clamp(1.25rem, 2.5vw, 2rem);
+	background:
+		radial-gradient(
+			circle at 100% 0%,
+			rgba(129, 80, 223, 0.08),
+			transparent 18rem
+		),
+		var(--bhasha-surface);
+}
+
+[data-dialog='New Course'] .dialog-content > div:last-child,
+[data-dialog='Import Course from ZIP'] .dialog-content > div:last-child {
+	padding: 1rem clamp(1.25rem, 2.5vw, 2rem) 1.25rem;
+	border-top: 1px solid var(--bhasha-border-brand);
+	background: rgba(250, 249, 252, 0.8);
+}
+
+.bhasha-dialog-heading {
+	display: flex;
+	min-width: 0;
+	align-items: flex-start;
+	gap: 0.875rem;
+}
+
+.bhasha-dialog-icon {
+	display: grid;
+	width: 2.75rem;
+	height: 2.75rem;
+	flex: 0 0 auto;
+	place-items: center;
+	border: 1px solid var(--bhasha-border-brand);
+	border-radius: 0.875rem;
+	background: var(--bhasha-50);
+	color: var(--bhasha-700);
+}
+
+.bhasha-dialog-title {
+	color: var(--bhasha-text);
+	font-family: var(--bhasha-font-display);
+	font-size: 1.25rem;
+	font-weight: 750;
+	letter-spacing: -0.02em;
+	line-height: 1.25;
+}
+
+.bhasha-dialog-description {
+	max-width: 56ch;
+	margin-top: 0.25rem;
+	color: var(--bhasha-text-muted);
+	font-size: 0.8125rem;
+	line-height: 1.5;
+}
+
+.bhasha-dialog-actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.75rem;
+}
+
+.bhasha-dialog-primary,
+.bhasha-dialog-secondary {
+	min-height: 2.5rem;
+	padding-inline: 1.1rem;
+	border-radius: 9999px !important;
+	font-weight: 700;
+}
+
+.bhasha-dialog-secondary {
+	border-color: var(--bhasha-border-brand) !important;
+	background: rgba(255, 255, 255, 0.92) !important;
+	color: var(--bhasha-700) !important;
+}
+
+.bhasha-dialog-secondary:hover {
+	border-color: var(--bhasha-300) !important;
+	background: var(--bhasha-50) !important;
+}
+
+@media (max-width: 767px) {
+	[data-dialog='New Course'] .dialog-content,
+	[data-dialog='Import Course from ZIP'] .dialog-content {
+		border-radius: 1.25rem;
+	}
+
+	.bhasha-dialog-description {
+		max-width: 40ch;
+	}
+}

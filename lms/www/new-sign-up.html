@@ -1,0 +1,82 @@
+{% extends "templates/web.html" %}
+
+{% block title %} {{_("New Sign Up")}} {% endblock %}
+
+{% block page_content %}
+
+<div class="bhasha-signup-shell">
+	<form id="new-sign-up" class="bhasha-signup-card">
+		<img
+			class="bhasha-signup-brand"
+			src="/assets/lms/frontend/bhasha-logo-text-transparent.png"
+			alt="Bhasha"
+		>
+		<h1 class="bhasha-signup-title">{{ _("Create your account") }}</h1>
+		<p class="bhasha-signup-copy">
+			{{ _("Start learning with expert guidance and a course plan built for steady progress.") }}
+		</p>
+		<div class="form-group">
+			<label for="full_name">{{ _("Full name") }}</label>
+			<input id="full_name" type="text" class="form-control" required>
+		</div>
+		<div class="form-group">
+			<label for="signup_email">{{ _("Email") }}</label>
+			<input id="signup_email" type="email" class="form-control" required>
+		</div>
+		<div class="form-group">
+			<label for="username">{{ _("Username") }}</label>
+			<input id="username" type="text" class="form-control" required>
+		</div>
+		<div class="form-group">
+			<label for="password">{{ _("Password") }}</label>
+			<input id="password" type="password" class="form-control" required>
+			<span class="password-strength-indicator indicator"></span>
+		</div>
+		<p class='password-strength-message text-muted small hidden'></p>
+		<div class="form-group">
+			<label for="invite_code">{{ _("Invite code") }}</label>
+			<input id="invite_code" type="text" class="form-control" readonly required
+				value="{{ frappe.form_dict['invite_code'] }}">
+		</div>
+		<button type="submit" id="submit" class="btn btn-primary">
+			{{_("Create account")}}
+		</button>
+	</form>
+</div>
+
+<script>
+	frappe.ready(() => {
+		$("#submit").click(function () {
+			var data = {
+				full_name: $("#full_name").val(),
+				signup_email: $("#signup_email").val(),
+				username: $("#username").val(),
+				password: $("#password").val(),
+				invite_code: $("#invite_code").val(),
+			};
+
+			frappe.call({
+				type: "POST",
+				method: "lms.lms.doctype.invite_request.invite_request.update_invite",
+				args: {
+					"data": data
+				},
+				callback: (data) => {
+					$("input").val("");
+					if (data.message == "OK") {
+						frappe.msgprint({
+							message: __("Your Account has been successfully created!"),
+							clear: true
+						});
+						setTimeout(function() {
+							window.location.href = "/login";
+						}, 2000);
+					}
+				}
+			});
+			return false;
+		});
+	})
+</script>
+
+{% endblock %}

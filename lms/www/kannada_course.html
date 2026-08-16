@@ -1,0 +1,188 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block head_include %}
+<meta name="description" content="{{ description }}">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:image" content="{{ meta_image }}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="image" href="{{ course.image or '/assets/lms/images/kannada-course-hero-800.webp' }}" fetchpriority="high">
+<link rel="stylesheet" href="/assets/lms/css/kannada-course.css">
+{% endblock %}
+
+{% block page_content %}
+<main class="kc-page">
+	<header class="kc-header">
+		<a class="kc-logo" href="/" aria-label="Bhasha home">
+			<img src="/assets/lms/frontend/bhasha-logo-text-transparent.png" alt="bhasha.io" style="height: 32px; width: auto; object-fit: contain;" />
+		</a>
+	</header>
+
+	<section class="kc-hero">
+		<div class="kc-hero-copy">
+			<p class="kc-eyebrow">Online Kannada Course</p>
+			<h1>Learn Kannada with a live, practical speaking-first course.</h1>
+			<p class="kc-lede">
+				Build confidence for everyday conversations with native tutors, structured lessons,
+				study material, and guided speaking practice.
+			</p>
+			<div class="kc-price-row" aria-label="Course price">
+				<span class="kc-offer">Limited cohort access</span>
+				<span class="kc-price">{{ price }}</span>
+				<span class="kc-original">{{ original_price }}</span>
+			</div>
+			<div class="kc-actions">
+				<a class="kc-button kc-button-primary" href="{{ cta_url }}">{{ cta_label }}</a>
+				<a class="kc-button kc-button-secondary" href="#curriculum">View curriculum</a>
+			</div>
+			<div class="kc-trust">
+				<span>1:1 personal coaching</span>
+				<span>Native language coaches</span>
+				<span>Course certificate</span>
+			</div>
+		</div>
+
+		<div class="kc-hero-media" aria-label="Kannada course preview">
+			{% if course.image %}
+				<img src="{{ course.image }}" alt="Kannada course preview" width="800" height="460" loading="eager" fetchpriority="high">
+			{% else %}
+				<picture>
+					<source srcset="/assets/lms/images/kannada-course-hero-480.webp 480w, /assets/lms/images/kannada-course-hero-800.webp 800w" sizes="(max-width: 640px) 92vw, 48vw" type="image/webp">
+					<img src="/assets/lms/images/course_card.jpeg" alt="Kannada course preview" width="800" height="460" loading="eager" fetchpriority="high">
+				</picture>
+			{% endif %}
+			<div class="kc-media-card">
+				<span>ಕನ್ನಡ</span>
+				<strong>Speak from lesson one</strong>
+			</div>
+		</div>
+	</section>
+
+	<section class="kc-section kc-about">
+		<div>
+			<p class="kc-kicker">About The Course</p>
+			<h2>For learners who want usable Kannada, not just vocabulary lists.</h2>
+		</div>
+		<p>
+			This course is built around live guidance, clear practice routines, and real-life
+			speaking situations. You learn sentence patterns, pronunciation, listening cues,
+			and everyday expressions you can use with colleagues, neighbours, friends, and family.
+		</p>
+	</section>
+
+	<section class="kc-feature-grid" aria-label="Course highlights">
+		<div><strong>Live sessions</strong><span>Personal coaching with guided practice</span></div>
+		<div><strong>Structured path</strong><span>Beginner-friendly lessons and exercises</span></div>
+		<div><strong>Study material</strong><span>Downloadable notes and revision prompts</span></div>
+		<div><strong>Flexible access</strong><span>Learn online from mobile or desktop</span></div>
+		<div><strong>Speaking focus</strong><span>Roleplays for daily conversations</span></div>
+		<div><strong>Certificate</strong><span>Complete the course and show progress</span></div>
+	</section>
+
+	<section class="kc-section kc-outcomes">
+		<div>
+			<p class="kc-kicker">Learning Outcomes</p>
+			<h2>What you will learn</h2>
+		</div>
+		<ul>
+			<li>Introduce yourself and hold simple Kannada conversations with confidence.</li>
+			<li>Understand common sentence patterns used in everyday speech.</li>
+			<li>Ask questions, express needs, and respond naturally in routine situations.</li>
+			<li>Build listening confidence through native pronunciation and repetition.</li>
+			<li>Use practical vocabulary for work, travel, shopping, food, and social settings.</li>
+		</ul>
+	</section>
+
+	<section id="curriculum" class="kc-section kc-curriculum">
+		<div class="kc-section-head">
+			<div>
+				<p class="kc-kicker">Course Curriculum</p>
+				<h2>A clear path from basics to conversation.</h2>
+			</div>
+			<a class="kc-button kc-button-primary" href="{{ cta_url }}">{{ cta_label }}</a>
+		</div>
+		<div class="kc-curriculum-layout">
+			<div class="kc-modules">
+				<details open>
+					<summary>Module 1: Foundations</summary>
+					<ul>
+						<li>Kannada sounds and pronunciation</li>
+						<li>Greetings, introductions, and polite forms</li>
+						<li>Basic sentence structures</li>
+					</ul>
+				</details>
+				<details>
+					<summary>Module 2: Daily Conversations</summary>
+					<ul>
+						<li>Home, work, food, directions, and transport</li>
+						<li>Asking and answering practical questions</li>
+						<li>Listening practice with native speech</li>
+					</ul>
+				</details>
+				<details>
+					<summary>Module 3: Speak With Confidence</summary>
+					<ul>
+						<li>Roleplays and guided conversation drills</li>
+						<li>Common mistakes and corrections</li>
+						<li>Revision plan and next steps</li>
+					</ul>
+				</details>
+			</div>
+			<aside class="kc-enroll-card">
+				<h3>Join the next Kannada cohort</h3>
+				<div><span>{{ price }}</span><s>{{ original_price }}</s></div>
+				<a class="kc-button kc-button-dark" href="{{ cta_url }}">{{ cta_label }}</a>
+			</aside>
+		</div>
+	</section>
+
+	<section class="kc-section kc-instructor">
+		<div>
+			<p class="kc-kicker">Meet Your Coach</p>
+			<h2>Learn with native Kannada guidance.</h2>
+		</div>
+		<p>
+			Bhasha coaches focus on practical fluency: pronunciation, useful sentence patterns,
+			correction, and repetition. The goal is simple: help you speak Kannada in real settings.
+		</p>
+	</section>
+
+	<section class="kc-certificate">
+		<div>
+			<p class="kc-script">Get a certificate</p>
+			<p>Complete your course and keep a record of your progress.</p>
+		</div>
+	</section>
+
+	<section class="kc-section kc-faq">
+		<div>
+			<p class="kc-kicker">You ask, we answer</p>
+			<h2>Frequently asked questions</h2>
+		</div>
+		<div class="kc-faq-list">
+			<details open>
+				<summary>Will I be able to speak Kannada fluently after this course?</summary>
+				<p>You will build practical speaking confidence for common situations. Fluency depends on practice, but the course gives you a structured base and live correction.</p>
+			</details>
+			<details>
+				<summary>Is this course beginner friendly?</summary>
+				<p>Yes. It starts with pronunciation, basic phrases, and simple sentence patterns.</p>
+			</details>
+			<details>
+				<summary>How does payment work?</summary>
+				<p>Click the enrolment button, log in or create an account, and you will be taken directly to the LMS billing page for Razorpay payment.</p>
+			</details>
+			<details>
+				<summary>What happens after payment?</summary>
+				<p>The LMS marks your payment and gives your account access to the course automatically.</p>
+			</details>
+		</div>
+	</section>
+
+	<footer class="kc-source">
+		<a href="https://github.com/Varta-Labs/bhasha-lms-public" target="_blank" rel="noopener noreferrer">Source code</a>
+	</footer>
+</main>
+{% endblock %}

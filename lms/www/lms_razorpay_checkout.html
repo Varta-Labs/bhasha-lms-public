@@ -1,0 +1,169 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("Payment") }}{% endblock %}
+
+{%- block header -%}{% endblock %}
+
+{% block script %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+	frappe.ready(() => {
+		const options = {{ razorpay_options | tojson }};
+		const billingUrl = {{ billing_url | tojson }};
+		const getFinalRedirect = (redirectTo) => {
+			try {
+				const gatewayRedirect = new URL(redirectTo, window.location.origin);
+				const isLegacySuccessPage =
+					gatewayRedirect.pathname.replace(/\/$/, '').endsWith('/payment-success');
+				const finalRedirect = gatewayRedirect.searchParams.get('redirect_to');
+
+				if (!isLegacySuccessPage || !finalRedirect) {
+					return gatewayRedirect.href;
+				}
+
+				const finalUrl = new URL(finalRedirect, window.location.origin);
+				return finalUrl.origin === window.location.origin
+					? finalUrl.href
+					: gatewayRedirect.href;
+			} catch (error) {
+				return redirectTo;
+			}
+		};
+
+		options.handler = (response) => {
+			$('.razorpay-loading').addClass('hidden');
+			$('.razorpay-confirming').removeClass('hidden');
+
+			frappe.call({
+				method: 'payments.templates.pages.razorpay_checkout.make_payment',
+				freeze: true,
+				headers: { 'X-Requested-With': 'XMLHttpRequest' },
+				args: {
+					razorpay_payment_id: response.razorpay_payment_id,
+					options,
+					reference_doctype: {{ reference_doctype | tojson }},
+					reference_docname: {{ reference_docname | tojson }},
+					token: {{ token | tojson }},
+				},
+				callback: (result) => {
+					if (result.message?.redirect_to) {
+						window.location.replace(
+							getFinalRedirect(result.message.redirect_to),
+						);
+					}
+				},
+				error: () => {
+					$('.razorpay-confirming').addClass('hidden');
+					$('.razorpay-error').removeClass('hidden');
+				},
+			});
+		};
+
+		options.modal = {
+			ondismiss: () => window.location.replace(billingUrl),
+		};
+
+		new Razorpay(options).open();
+	});
+</script>
+{% endblock %}
+
+{%- block page_content -%}
+<div class="bhasha-payment-state">
+	<div class="bhasha-payment-rings" aria-hidden="true"></div>
+	<div class="bhasha-payment-brand">
+		<img src="/assets/lms/frontend/bhasha-logo-text-transparent.png" alt="Bhasha">
+	</div>
+	<main class="bhasha-payment-card" role="status" aria-live="polite">
+		<div class="razorpay-loading">
+			<div class="bhasha-payment-spinner" aria-hidden="true"></div>
+			<p class="bhasha-payment-eyebrow">{{ _("Secure checkout") }}</p>
+			<h1>{{ _("Opening payment") }}</h1>
+			<p>{{ _("Your secure payment window is being prepared. Please keep this page open.") }}</p>
+		</div>
+		<div class="razorpay-confirming hidden">
+			<div class="bhasha-payment-spinner" aria-hidden="true"></div>
+			<p class="bhasha-payment-eyebrow">{{ _("Almost there") }}</p>
+			<h1>{{ _("Confirming payment") }}</h1>
+			<p>{{ _("We are verifying the transaction and activating your access. Please do not refresh this page.") }}</p>
+		</div>
+		<div class="razorpay-error hidden">
+			<div class="bhasha-payment-error-icon" aria-hidden="true">!</div>
+			<p class="bhasha-payment-eyebrow">{{ _("Action needed") }}</p>
+			<h1>{{ _("We could not confirm the payment") }}</h1>
+			<p>{{ _("Return to checkout to try again. You will not be charged twice for a completed transaction.") }}</p>
+			<a href="{{ billing_url }}">{{ _("Return to checkout") }}</a>
+		</div>
+		<div class="bhasha-payment-trust">{{ _("Protected payment · Bhasha") }}</div>
+	</main>
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+	header, footer, .navbar, .web-footer { display: none !important; }
+	body {
+		margin: 0;
+		background: #f7f2e8;
+		font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+	}
+	main.container { width: 100%; max-width: none; margin: 0 !important; padding: 0 !important; }
+	.bhasha-payment-state {
+		position: relative;
+		display: grid;
+		min-height: 100vh;
+		overflow: hidden;
+		place-items: center;
+		padding: 5rem 1.25rem 2rem;
+		background:
+			radial-gradient(circle at 16% 4%, rgba(255,255,255,.82), transparent 28%),
+			radial-gradient(circle at 86% 74%, rgba(210,189,153,.2), transparent 34%),
+			linear-gradient(135deg, #f7f2e8, #f3ecdf 58%, #f8f4eb);
+	}
+	.bhasha-payment-rings {
+		position: absolute; top: -13rem; right: -10rem; width: 34rem; aspect-ratio: 1;
+		border: 1px solid rgba(113,91,61,.12); border-radius: 50%;
+		box-shadow: 0 0 0 5rem rgba(113,91,61,.04), 0 0 0 10rem rgba(113,91,61,.025);
+	}
+	.bhasha-payment-brand {
+		position: absolute; z-index: 1; top: 1.75rem; left: 50%; transform: translateX(-50%);
+	}
+	.bhasha-payment-brand img { width: auto; height: 2rem; }
+	.bhasha-payment-card {
+		position: relative; z-index: 1; width: min(100%, 36rem); padding: clamp(2rem, 6vw, 3.5rem);
+		border: 1px solid rgba(108,92,231,.2); border-radius: 2rem;
+		background: rgba(255,255,255,.94); box-shadow: 0 28px 64px -26px rgba(74,47,25,.32);
+		text-align: center; backdrop-filter: blur(16px);
+	}
+	.bhasha-payment-spinner {
+		width: 3.75rem; height: 3.75rem; margin: 0 auto 1.35rem;
+		border: 4px solid rgba(108,92,231,.14); border-top-color: #6c5ce7; border-radius: 50%;
+		animation: bhasha-payment-spin .9s linear infinite;
+	}
+	.bhasha-payment-error-icon {
+		display: grid; width: 3.75rem; height: 3.75rem; margin: 0 auto 1.35rem; place-items: center;
+		border-radius: 1rem; background: rgba(245,158,11,.12); color: #b45309; font-size: 1.5rem; font-weight: 800;
+	}
+	.bhasha-payment-eyebrow {
+		margin: 0; color: #4a38c2 !important; font-size: .75rem !important; font-weight: 800;
+		letter-spacing: .12em; text-transform: uppercase;
+	}
+	.bhasha-payment-card h1 {
+		margin: .65rem 0 0; color: #171717; font-family: Outfit, system-ui, sans-serif;
+		font-size: clamp(1.9rem, 6vw, 2.6rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.12;
+	}
+	.bhasha-payment-card h1 + p {
+		max-width: 30rem; margin: 1rem auto 0; color: #625d68; font-size: 1rem; line-height: 1.65;
+	}
+	.bhasha-payment-card a {
+		display: inline-flex; min-height: 3rem; align-items: center; justify-content: center;
+		margin-top: 1.5rem; padding: .8rem 1.3rem; border-radius: 9999px;
+		background: linear-gradient(135deg, #6c5ce7, #4a38c2); color: #fff !important;
+		font-weight: 800; text-decoration: none; box-shadow: 0 14px 28px -8px rgba(108,92,231,.45);
+	}
+	.bhasha-payment-trust { margin-top: 1.5rem; color: #7c7c7c; font-size: .75rem; font-weight: 600; }
+	@keyframes bhasha-payment-spin { to { transform: rotate(360deg); } }
+	@media (prefers-reduced-motion: reduce) { .bhasha-payment-spinner { animation-duration: 1.8s; } }
+	@media (max-width: 480px) { .bhasha-payment-card { border-radius: 1.5rem; } }
+</style>
+{% endblock %}

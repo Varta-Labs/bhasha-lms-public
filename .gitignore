@@ -1,0 +1,46 @@
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+*.local
+
+# Frappe/bench runtime data
+sites/
+logs/
+config/
+assets/
+.bench/
+archived_sites/
+
+# Databases, backups, keys, and certificates
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+*.dump
+*.backup
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python and JavaScript generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+node_modules/
+frontend/dist/
+frontend/coverage/
+lms/public/frontend/
+lms/public/dist/
+*.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

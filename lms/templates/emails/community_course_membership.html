@@ -1,0 +1,15 @@
+{% from "templates/emails/bhasha_auth.html" import auth_email %}
+
+{% if update_password_link %}
+	{% call auth_email(
+		_("Set your Bhasha password"),
+		_("Set Password"),
+		update_password_link,
+		_("This password link is intended only for the email address it was sent to.")
+	) %}
+		<p style="margin: 0 0 12px;">{{ _("Hi") }} {{ full_name | e }},</p>
+		<p style="margin: 0;">
+			{{ _("Set a password for your Bhasha account using the secure button below.") }}
+		</p>
+	{% endcall %}
+{% endif %}
