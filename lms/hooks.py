@@ -178,7 +178,6 @@ override_whitelisted_methods = {
 # Add all simple route rules here
 website_route_rules = [
 	{"from_route": "/kannada-for-everyday-conversations", "to_route": "kannada_course"},
-	{"from_route": "/kannada-course", "to_route": "kannada_course"},
 	{
 		"from_route": f"/{get_lms_path()}/sw.js",
 		"to_route": "_lms_service_worker",
