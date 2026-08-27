@@ -6,18 +6,19 @@ from frappe.utils import fmt_money
 from lms.lms.utils import get_lms_route
 
 
-COURSE_TITLE = "Kannada Test Course API"
-DEFAULT_PRICE = "₹10"
+COURSE_TITLE = "Kannada for Everyday Conversations"
+DEFAULT_PRICE = "₹999"
 
 
 def get_context(context):
 	context.no_cache = 1
 	context.no_header = 1
 	context.no_breadcrumbs = 1
-	context.title = "Online Kannada Course | Bhasha.io"
+	context.title = "Kannada for Everyday Conversations | Bhasha.io"
 	context.description = (
-		"Learn Kannada online with live coaching, structured lessons, speaking practice, "
-		"and a practical course path built for busy learners."
+		"Learn practical Kannada to communicate more comfortably at work, while travelling, "
+		"and in everyday situations through a structured, beginner-friendly course you can "
+		"complete at your own pace."
 	)
 
 	course = get_course()
@@ -46,7 +47,7 @@ def get_context(context):
 	context.cta_url = get_cta_url(is_enrolled, is_logged_in, is_paid_course, course_url, billing_url, signup_url)
 	context.cta_label = get_cta_label(is_enrolled, is_logged_in, is_paid_course)
 	context.price = get_price(course)
-	context.original_price = "₹8,999"
+	context.original_price = "₹2,999"
 	context.meta_image = get_meta_image(course)
 	return context
 

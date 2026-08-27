@@ -17,7 +17,7 @@ import frappe
 from frappe.utils import cint
 
 
-KANNADA_COURSE_DATA_FILE = "kannada-video-course.json"
+KANNADA_COURSE_DATA_FILE = "kannada-for-everyday-conversations.json"
 DEFAULT_PUBLIC_URL = "https://learn.bhasha.io"
 EDITORJS_VERSION = "2.29.0"
 

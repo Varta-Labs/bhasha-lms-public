@@ -141,8 +141,9 @@
 				</div>
 
 				<div class="flex shrink-0 items-center gap-x-2">
-					<div v-if="course.paid_course" class="font-semibold">
-						{{ course.price }}
+					<div v-if="course.paid_course" class="flex items-baseline gap-2 font-semibold">
+						<span>{{ course.price }}</span>
+						<s v-if="hasEarlyBirdOffer" class="text-xs font-medium text-ink-gray-5">₹2,999</s>
 					</div>
 
 					<div
@@ -171,7 +172,7 @@ import {
 import { sessionStore } from '@/stores/session'
 import { Tooltip } from 'frappe-ui'
 import { formatAmount, formatRating } from '@/utils'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import CourseInstructors from '@/components/CourseInstructors.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
@@ -190,6 +191,11 @@ const thumbnailFailed = ref(false)
 const handleThumbnailError = () => {
 	thumbnailFailed.value = true
 }
+
+const hasEarlyBirdOffer = computed(() => {
+	const identity = `${props.course?.name || ''} ${props.course?.title || ''}`.toLowerCase()
+	return Boolean(props.course?.paid_course && (identity.includes('hindi') || identity.includes('kannada')))
+})
 
 watch(
 	() => props.course?.image,

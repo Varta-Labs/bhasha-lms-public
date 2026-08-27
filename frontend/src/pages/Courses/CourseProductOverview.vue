@@ -4,8 +4,8 @@
 			<div class="product-course__shell product-course__hero-grid">
 				<div class="product-course__hero-copy">
 					<span v-if="course.data.category" class="product-course__tag"><Tag class="size-4" />{{ course.data.category }}</span>
-					<h1>{{ course.data.title }}</h1>
-					<p>{{ course.data.short_introduction }}</p>
+					<h1>{{ heroTitle }}</h1>
+					<p>{{ heroIntroduction }}</p>
 					<div v-if="primaryInstructor || ratingValue" class="product-course__author-row">
 						<div v-if="primaryInstructor" class="product-course__author">
 							<span>{{ instructorInitials }}</span>
@@ -127,6 +127,15 @@ const ratingCount = computed(() => props.course.data?.rating_count || 0)
 const roundedRating = computed(() => Math.round(numericRating.value))
 const instructorInitials = computed(() => { const name = primaryInstructor.value?.full_name || primaryInstructor.value?.name || ''; return name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() })
 const isKannadaCourse = computed(() => `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('kannada'))
+const isHindiCourse = computed(() => `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('hindi'))
+const courseLanguage = computed(() => isKannadaCourse.value ? 'Kannada' : isHindiCourse.value ? 'Hindi' : '')
+const isEverydayConversationCourse = computed(() => Boolean(courseLanguage.value))
+const heroTitle = computed(() => isEverydayConversationCourse.value
+	? __('Start Speaking {0} for Everyday Conversations').format(courseLanguage.value)
+	: props.course.data?.title || '')
+const heroIntroduction = computed(() => isEverydayConversationCourse.value
+	? __('Learn practical {0} to communicate more comfortably at work, while travelling, and in everyday situations through a structured, beginner-friendly course you can complete at your own pace.').format(courseLanguage.value)
+	: props.course.data?.short_introduction || '')
 const heroOutcomes = computed<string[]>(() => {
 	const configured = props.course.data?.learning_outcomes
 	if (configured?.length) return configured.slice(0, 3)

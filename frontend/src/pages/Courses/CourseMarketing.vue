@@ -7,7 +7,9 @@
 					<p>{{ marketingIntroduction }}</p>
 					<div class="guest-course__offer">
 						<div class="guest-course__price-row">
+							<span v-if="hasEarlyBirdOffer" class="guest-course__offer-label">{{ __('Early bird offer') }}</span>
 							<strong>{{ priceLabel }}</strong>
+							<s v-if="hasEarlyBirdOffer">₹2,999</s>
 							<span>{{ __('Lifetime access') }}</span>
 						</div>
 						<a :href="signupUrl" class="guest-course__primary-action">
@@ -231,6 +233,14 @@ const isKannadaCourse = computed(() =>
 	`${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('kannada'),
 )
 
+const isHindiCourse = computed(() =>
+	`${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('hindi'),
+)
+
+const hasEarlyBirdOffer = computed(() =>
+	Boolean(props.course.data?.paid_course && (isKannadaCourse.value || isHindiCourse.value)),
+)
+
 const courseLanguage = computed(() => {
 	const category = props.course.data?.category?.trim()
 	if (category && category.toLowerCase() !== 'languages') return category
@@ -261,14 +271,14 @@ const testimonialsLead = computed(() =>
 )
 
 const marketingTitle = computed(() =>
-	isKannadaCourse.value
-		? __('Feel more at home in Karnataka—one conversation at a time.')
+	isKannadaCourse.value || isHindiCourse.value
+		? __('Start Speaking {0} for Everyday Conversations').format(courseLanguage.value)
 		: props.course.data?.title || '',
 )
 
 const marketingIntroduction = computed(() =>
-	isKannadaCourse.value
-		? __('A practical, self-paced spoken Kannada course for adults who want to connect with colleagues, neighbours, and everyday life around them.')
+	isKannadaCourse.value || isHindiCourse.value
+		? __('Learn practical {0} to communicate more comfortably at work, while travelling, and in everyday situations through a structured, beginner-friendly course you can complete at your own pace.').format(courseLanguage.value)
 		: props.course.data?.short_introduction || __('A practical, guided course designed to help you build useful skills with confidence.'),
 )
 
@@ -456,8 +466,10 @@ onBeforeUnmount(() => pageObserver?.disconnect())
 .guest-course__hero-copy h1 { max-width: 34rem; font-size: clamp(2.25rem,4.2vw,3.5rem); font-weight: 800; line-height: 1.1; letter-spacing: -.035em; text-wrap: balance; }
 .guest-course__hero-copy > p { max-width: 34rem; margin-top: 1.5rem; font-size: clamp(1.0625rem,1.5vw,1.2rem); line-height: 1.65; }
 .guest-course__offer { margin-top: 2rem; }
-.guest-course__price-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+.guest-course__price-row { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; margin-bottom: 1.25rem; }
+.guest-course__offer-label { flex-basis: 100%; color: var(--guest-brand-deep)!important; font-size: .75rem!important; font-weight: 800!important; letter-spacing: .1em; text-transform: uppercase; }
 .guest-course__price-row strong { color: var(--guest-ink); font-family: var(--bhasha-font-display); font-size: clamp(2.5rem,4vw,3rem); line-height: 1; letter-spacing: -.04em; }
+.guest-course__price-row s { color: var(--guest-muted); font-family: var(--bhasha-font-display); font-size: 1.25rem; font-weight: 700; }
 .guest-course__price-row span { color: var(--guest-muted); font-size: .875rem; font-weight: 600; }
 .guest-course__primary-action, .guest-course__floating-action { display: inline-flex; min-height: 3.25rem; align-items: center; justify-content: center; padding: .875rem 1.5rem; border-radius: 9999px; background: linear-gradient(135deg,var(--guest-brand),var(--guest-brand-deep)); color: #fff; font-size: .9375rem; font-weight: 800; box-shadow: 0 14px 28px -8px rgba(108,92,231,.4); transition: transform .18s ease,filter .18s ease; }
 .guest-course__primary-action:hover, .guest-course__floating-action:hover { filter: brightness(1.06); transform: translateY(-1px); }

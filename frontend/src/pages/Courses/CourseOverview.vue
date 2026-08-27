@@ -410,12 +410,12 @@ const signupUrl = computed(() =>
 )
 
 const isKannadaShowcase = computed(
-	() => props.course.data?.name === 'kannada-video-course',
+	() => props.course.data?.name === 'kannada-for-everyday-conversations',
 )
 
-const kannadaSeoTitle = 'Learn Kannada with a live, practical speaking-first course.'
+const kannadaSeoTitle = 'Start Speaking Kannada for Everyday Conversations'
 const kannadaSeoDescription =
-	'Learn Kannada online with live coaching, structured lessons, speaking practice, and a practical course path built for busy learners.'
+	'Learn practical Kannada to communicate more comfortably at work, while travelling, and in everyday situations through a structured, beginner-friendly course you can complete at your own pace.'
 
 const heroEyebrow = computed(() => {
 	if (props.course.data?.eyebrow_text) return props.course.data.eyebrow_text
@@ -429,9 +429,7 @@ const heroTitle = computed(() =>
 
 const heroIntroduction = computed(() => {
 	if (isKannadaShowcase.value) {
-		return __(
-			'Build confidence for everyday conversations with native tutors, structured lessons, study material, and guided speaking practice.',
-		)
+		return __(kannadaSeoDescription)
 	}
 	return props.course.data?.short_introduction || ''
 })
