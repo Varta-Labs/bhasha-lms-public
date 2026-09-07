@@ -11,6 +11,12 @@ const routes = [
 		component: () => import('@/pages/Home/Home.vue'),
 	},
 	{
+		path: '/privacy-policy',
+		name: 'PrivacyPolicy',
+		component: () => import('@/pages/PrivacyPolicy.vue'),
+		meta: { public: true, noSidebar: true },
+	},
+	{
 		path: '/courses',
 		name: 'Courses',
 		component: () => import('@/pages/Courses/Courses.vue'),
@@ -277,10 +283,12 @@ router.beforeEach(async (to, from, next) => {
 	if (!isLoggedIn) {
 		if (to.name == 'Home') router.push({ name: 'Courses' })
 
-		await settings.promise
-		if (!settings.data.allow_guest_access) {
-			window.location.href = '/login'
-			return
+		if (!to.meta.public) {
+			await settings.promise
+			if (!settings.data.allow_guest_access) {
+				window.location.href = '/login'
+				return
+			}
 		}
 	}
 	return next()

@@ -28,6 +28,7 @@ const { userResource } = usersStore()
 
 router.beforeEach((to, from, next) => {
 	if (
+		to.meta.noSidebar ||
 		to.query.fromLesson ||
 		to.path === '/persona' ||
 		to.name === 'Billing' ||
@@ -43,6 +44,7 @@ router.beforeEach((to, from, next) => {
 
 const Layout = computed(() => {
 	if (
+		router.currentRoute.value.meta.noSidebar ||
 		noSidebar.value ||
 		router.currentRoute.value.name === 'Billing' ||
 		router.currentRoute.value.name === 'PaymentSuccess' ||

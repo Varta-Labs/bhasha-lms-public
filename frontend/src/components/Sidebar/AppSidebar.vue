@@ -159,17 +159,31 @@
 				:isSidebarCollapsed="sidebarStore.isSidebarCollapsed"
 				appName="learning"
 			/>
-			<a
-				href="https://github.com/Varta-Labs/bhasha-lms-public"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="bhasha-sidebar-source-link flex items-center gap-2 rounded px-2 py-1.5 text-xs text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9"
-				:class="sidebarStore.isSidebarCollapsed ? 'justify-center' : ''"
-				:aria-label="__('Source code')"
-				:title="__('Source code')"
+			<div
+				class="flex gap-1"
+				:class="sidebarStore.isSidebarCollapsed ? 'flex-col items-center' : 'items-center'"
 			>
-				<img :src="githubIcon" alt="" class="size-4 shrink-0" />
-			</a>
+				<a
+					href="https://github.com/Varta-Labs/bhasha-lms-public"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="bhasha-sidebar-source-link flex size-8 shrink-0 items-center justify-center rounded text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9"
+					:aria-label="__('Source code')"
+					:title="__('Source code')"
+				>
+					<img :src="githubIcon" alt="" class="size-4 shrink-0" />
+				</a>
+				<router-link
+					:to="{ name: 'PrivacyPolicy' }"
+					class="flex min-h-8 items-center gap-2 rounded px-2 text-xs text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9"
+					:class="sidebarStore.isSidebarCollapsed ? 'size-8 justify-center' : 'flex-1'"
+					:aria-label="__('Privacy Policy')"
+					:title="__('Privacy Policy')"
+				>
+					<ShieldCheck class="size-4 shrink-0 stroke-1.5" />
+					<span v-if="!sidebarStore.isSidebarCollapsed">{{ __('Privacy Policy') }}</span>
+				</router-link>
+			</div>
 
 			<div
 				class="bhasha-sidebar-footer mt-3 flex items-center"
@@ -305,6 +319,7 @@ import {
 	FileText,
 	Phone,
 	Plus,
+	ShieldCheck,
 	User,
 	UserPlus,
 	Users,

@@ -175,7 +175,7 @@
 		</section>
 
 		<footer class="guest-course__footer">
-			<div class="guest-course__shell"><img :src="brandLogo" alt="bhasha.io" class="guest-course__brand-logo" /><span>{{ __('Practical language learning for real conversations.') }}</span><a href="#faq">{{ __('Course Questions') }} ↑</a><a href="https://github.com/Varta-Labs/bhasha-lms-public" target="_blank" rel="noopener noreferrer" :aria-label="__('Source code')" :title="__('Source code')"><img :src="githubIcon" alt="" class="guest-course__github-icon" /></a></div>
+			<div class="guest-course__shell"><img :src="brandLogo" alt="bhasha.io" class="guest-course__brand-logo" /><span>{{ __('Practical language learning for real conversations.') }}</span><router-link :to="{ name: 'PrivacyPolicy' }">{{ __('Privacy Policy') }}</router-link><a href="https://github.com/Varta-Labs/bhasha-lms-public" target="_blank" rel="noopener noreferrer" :aria-label="__('Source code')" :title="__('Source code')"><img :src="githubIcon" alt="" class="guest-course__github-icon" /></a></div>
 		</footer>
 
 		<a
