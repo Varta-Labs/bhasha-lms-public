@@ -175,7 +175,7 @@
 		</section>
 
 		<footer class="guest-course__footer">
-			<div class="guest-course__shell"><img :src="brandLogo" alt="bhasha.io" /><span>{{ __('Practical language learning for real conversations.') }}</span><a href="#faq">{{ __('Course Questions') }} ↑</a><a href="https://github.com/Varta-Labs/bhasha-lms-public" target="_blank" rel="noopener noreferrer">{{ __('Source code') }}</a></div>
+			<div class="guest-course__shell"><img :src="brandLogo" alt="bhasha.io" class="guest-course__brand-logo" /><span>{{ __('Practical language learning for real conversations.') }}</span><a href="#faq">{{ __('Course Questions') }} ↑</a><a href="https://github.com/Varta-Labs/bhasha-lms-public" target="_blank" rel="noopener noreferrer" :aria-label="__('Source code')" :title="__('Source code')"><img :src="githubIcon" alt="" class="guest-course__github-icon" /></a></div>
 		</footer>
 
 		<a
@@ -311,9 +311,7 @@ const priceLabel = computed(() => {
 	return props.course.data.price || (props.course.data.course_price ? `₹${props.course.data.course_price}` : __('Paid course'))
 })
 
-const enrollLabel = computed(() =>
-	`${__('Sign up and Enroll for')} ${priceLabel.value}`,
-)
+const enrollLabel = computed(() => __('Sign up and Enroll'))
 
 const previewImage = computed(() =>
 	props.course.data?.image || `${import.meta.env.BASE_URL}kannada-course-hero-v1.png`,
@@ -324,6 +322,7 @@ const landingVideoUrl = computed(() => {
 	return link.startsWith('http') ? link : `https://www.youtube.com/embed/${link}`
 })
 const brandLogo = `${import.meta.env.BASE_URL}bhasha-logo-text-transparent.png`
+const githubIcon = `${import.meta.env.BASE_URL}github.svg`
 const communityImage = `${import.meta.env.BASE_URL}course-marketing/community-connection.jpg`
 const guidedLearningImage = `${import.meta.env.BASE_URL}course-marketing/guided-learning.jpg`
 const confidenceImage = `${import.meta.env.BASE_URL}course-marketing/everyday-confidence.jpg`
@@ -544,7 +543,8 @@ onBeforeUnmount(() => pageObserver?.disconnect())
 .guest-course__faq-list details p { max-width:46rem; padding:0 2rem 1.5rem 0; line-height:1.7; }
 .guest-course__footer { border-top:1px solid var(--guest-line); background:#fff; }
 .guest-course__footer .guest-course__shell { display:flex; min-height:6rem; align-items:center; justify-content:space-between; gap:1.5rem; color:var(--guest-muted); font-size:.8125rem; }
-.guest-course__footer img { width:8.5rem; height:auto; }
+.guest-course__footer .guest-course__brand-logo { width:8.5rem; height:auto; }
+.guest-course__footer .guest-course__github-icon { width:1.25rem; height:1.25rem; }
 .guest-course__footer a { color:var(--guest-brand-deep); font-weight:700; }
 .guest-course__floating-action { position: fixed; right: 1.5rem; bottom: calc(1.5rem + env(safe-area-inset-bottom)); z-index: 50; }
 

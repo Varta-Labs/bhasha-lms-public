@@ -166,9 +166,9 @@
 				class="bhasha-sidebar-source-link flex items-center gap-2 rounded px-2 py-1.5 text-xs text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9"
 				:class="sidebarStore.isSidebarCollapsed ? 'justify-center' : ''"
 				:aria-label="__('Source code')"
+				:title="__('Source code')"
 			>
-				<Code2 class="size-4 shrink-0 stroke-1.5" />
-				<span v-if="!sidebarStore.isSidebarCollapsed">{{ __('Source code') }}</span>
+				<img :src="githubIcon" alt="" class="size-4 shrink-0" />
 			</a>
 
 			<div
@@ -301,7 +301,6 @@ import {
 	ChevronRight,
 	ChevronsRight,
 	CircleHelp,
-	Code2,
 	FolderTree,
 	FileText,
 	Phone,
@@ -328,6 +327,7 @@ import SidebarLink from '@/components/Sidebar/SidebarLink.vue'
 import CommandPalette from '@/components/CommandPalette/CommandPalette.vue'
 
 const { user } = sessionStore()
+const githubIcon = `${import.meta.env.BASE_URL}github.svg`
 const { userResource } = usersStore()
 let sidebarStore = useSidebar()
 const socket = inject('$socket')

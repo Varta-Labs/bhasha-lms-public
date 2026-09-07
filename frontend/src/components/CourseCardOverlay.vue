@@ -2,10 +2,11 @@
 	<div class="course-enrollment-card">
 		<div class="course-preview relative group overflow-hidden bg-ink-gray-9">
 			<iframe
-				v-if="video_link && showVideoPreview"
+				v-if="video_link"
 				:src="video_link"
 				class="h-full w-full"
-				title="Course preview"
+				:title="__('Course introduction video')"
+				allow="autoplay; fullscreen; picture-in-picture"
 				allowfullscreen
 			/>
 			<div v-else class="relative h-full w-full">
@@ -14,18 +15,6 @@
 					:alt="course.data?.title || __('Course preview')"
 					class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
 				/>
-				<div class="absolute inset-0 bg-gradient-to-t from-ink-gray-9/80 via-ink-gray-9/20 to-transparent flex flex-col items-center justify-center p-4">
-					<button
-						type="button"
-						@click="togglePreview"
-						class="flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/95 hover:bg-white text-ink-gray-9 font-semibold text-sm shadow-xl backdrop-blur-md transition-all transform group-hover:scale-105 active:scale-95"
-					>
-						<span class="flex items-center justify-center size-7 rounded-full bg-bhasha-purple text-white shadow-inner">
-							<Play class="size-3.5 fill-current ml-0.5" />
-						</span>
-						<span>{{ __('Watch Course Preview (3m)') }}</span>
-					</button>
-				</div>
 			</div>
 		</div>
 		<div class="p-5 sm:p-6">
@@ -208,10 +197,9 @@ import {
 	GraduationCap,
 	HelpCircle,
 	MonitorPlay,
-	Play,
 	Users,
 } from 'lucide-vue-next'
-import { computed, inject, ref } from 'vue'
+import { computed, inject } from 'vue'
 import { Badge, Button, call, createResource, toast } from 'frappe-ui'
 import { useRouter } from 'vue-router'
 import CertificationLinks from '@/components/CertificationLinks.vue'
@@ -229,15 +217,6 @@ const user = inject<SessionUser>('$user')!
 const readOnlyMode = (window as Window & { read_only_mode?: boolean })
 	.read_only_mode
 const { capture } = useTelemetry()
-
-const showVideoPreview = ref(false)
-function togglePreview() {
-	if (video_link.value) {
-		showVideoPreview.value = !showVideoPreview.value
-	} else {
-		toast.info(__('Full video preview is unlocked inside the course modules.'))
-	}
-}
 
 const props = withDefaults(
 	defineProps<{
@@ -325,9 +304,7 @@ const hasEarlyBirdOffer = computed<boolean>(() => {
 	return Boolean(props.course.data?.paid_course && (identity.includes('hindi') || identity.includes('kannada')))
 })
 
-const guestEnrollLabel = computed(() =>
-	`${__('Sign up and Enroll for')} ${priceLabel.value}`,
-)
+const guestEnrollLabel = computed(() => __('Sign up and Enroll'))
 
 const enrollLabel = computed(() => `${__('Enroll for')} ${priceLabel.value}`)
 

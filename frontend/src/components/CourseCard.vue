@@ -4,8 +4,17 @@
 		class="bhasha-course-card flex h-full flex-col overflow-hidden bg-surface-cards text-ink-gray-9"
 	>
 		<div class="bhasha-course-card-media">
+			<iframe
+				v-if="videoLink"
+				:src="videoLink"
+				:aria-label="`${course.title} ${__('introduction video')}`"
+				class="bhasha-course-card-video"
+				allow="autoplay; fullscreen; picture-in-picture"
+				allowfullscreen
+				loading="lazy"
+			/>
 			<img
-				v-if="course.image && !thumbnailFailed"
+				v-else-if="course.image && !thumbnailFailed"
 				:src="course.image"
 				:alt="course.title"
 				class="bhasha-course-card-image"
@@ -187,6 +196,12 @@ const props = defineProps({
 })
 
 const thumbnailFailed = ref(false)
+
+const videoLink = computed(() => {
+	const link = props.course?.video_link
+	if (!link) return ''
+	return link.startsWith('http') ? link : `https://www.youtube.com/embed/${link}`
+})
 
 const handleThumbnailError = () => {
 	thumbnailFailed.value = true
