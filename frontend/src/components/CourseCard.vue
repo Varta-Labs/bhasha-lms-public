@@ -4,27 +4,15 @@
 		class="bhasha-course-card flex h-full flex-col overflow-hidden bg-surface-cards text-ink-gray-9"
 	>
 		<div class="bhasha-course-card-media">
-			<iframe
-				v-if="videoLink"
-				:src="videoLink"
-				:aria-label="`${course.title} ${__('introduction video')}`"
-				class="bhasha-course-card-video"
-				allow="autoplay; fullscreen; picture-in-picture"
-				allowfullscreen
-				loading="lazy"
-			/>
 			<img
-				v-else-if="course.image && !thumbnailFailed"
+				v-if="course.image && !thumbnailFailed"
 				:src="course.image"
 				:alt="course.title"
 				class="bhasha-course-card-image"
 				loading="lazy"
 				@error="handleThumbnailError"
 			/>
-			<div v-else class="bhasha-course-card-fallback">
-				<BookOpen class="size-8 stroke-1.5" aria-hidden="true" />
-				<span>{{ course.category || __('Course') }}</span>
-			</div>
+			<div v-else class="bhasha-course-card-fallback" aria-hidden="true" />
 			<div
 				v-if="
 					course.featured ||
@@ -129,26 +117,6 @@
 			<div
 				class="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4"
 			>
-				<div
-					v-if="course.instructors?.length"
-					class="avatar-group overlap min-w-0 text-sm"
-				>
-					<div
-						class="h-6 me-1"
-						:class="{ 'avatar-group overlap': course.instructors.length > 1 }"
-					>
-						<UserAvatar
-							v-for="instructor in course.instructors"
-							:key="instructor.username || instructor.full_name"
-							:user="instructor"
-						/>
-					</div>
-					<CourseInstructors
-						:instructors="course.instructors"
-						:linkable="false"
-					/>
-				</div>
-
 				<div class="flex shrink-0 items-center gap-x-2">
 					<div v-if="course.paid_course" class="flex items-baseline gap-2 font-semibold">
 						<span>{{ course.price }}</span>
@@ -182,8 +150,6 @@ import { sessionStore } from '@/stores/session'
 import { Tooltip } from 'frappe-ui'
 import { formatAmount, formatRating } from '@/utils'
 import { computed, ref, watch } from 'vue'
-import CourseInstructors from '@/components/CourseInstructors.vue'
-import UserAvatar from '@/components/UserAvatar.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
 
 const { user } = sessionStore()
@@ -196,12 +162,6 @@ const props = defineProps({
 })
 
 const thumbnailFailed = ref(false)
-
-const videoLink = computed(() => {
-	const link = props.course?.video_link
-	if (!link) return ''
-	return link.startsWith('http') ? link : `https://www.youtube.com/embed/${link}`
-})
 
 const handleThumbnailError = () => {
 	thumbnailFailed.value = true

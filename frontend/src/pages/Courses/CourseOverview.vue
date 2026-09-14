@@ -221,7 +221,6 @@
 			</div>
 		</section>
 
-		<!-- Band 6: MEET YOUR COACH / INSTRUCTORS BAND (Full Width Horizontal Band) -->
 		<!-- Band 6: WHY SELF-PACED LEARNING WORKS (Full Width Horizontal Band) -->
 		<section class="w-full bg-gradient-to-b from-purple-50/20 via-white to-purple-50/40 dark:from-[#15151c] dark:via-[#181822] dark:to-[#15151c] py-16 sm:py-24 border-t border-purple-100 dark:border-purple-900/30">
 			<div class="course-shell max-w-5xl mx-auto">
@@ -392,8 +391,6 @@ import CourseCardOverlay from '@/components/CourseCardOverlay.vue'
 import CourseOutline from '@/components/CourseOutline.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
 import CourseReviews from '@/components/CourseReviews.vue'
-import CourseInstructors from '@/components/CourseInstructors.vue'
-import CourseCreatorCard from '@/components/CourseCreatorCard.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import RelatedCourses from '@/components/RelatedCourses.vue'
 import { getLmsRoute, getSignupUrl } from '@/utils/basePath'

@@ -6,13 +6,7 @@
 					<span v-if="course.data.category" class="product-course__tag"><Tag class="size-4" />{{ course.data.category }}</span>
 					<h1>{{ heroTitle }}</h1>
 					<p>{{ heroIntroduction }}</p>
-					<div v-if="primaryInstructor || ratingValue" class="product-course__author-row">
-						<div v-if="primaryInstructor" class="product-course__author">
-							<span>{{ instructorInitials }}</span>
-							<div><small>{{ __('Instructor') }}</small><strong>{{ primaryInstructor.full_name || primaryInstructor.name }}</strong></div>
-						</div>
-						<div v-if="ratingValue" class="product-course__rating"><Star class="size-4 fill-current" />{{ ratingValue }}<span>· {{ ratingCount }} {{ __('ratings') }}</span></div>
-					</div>
+					<div v-if="ratingValue" class="product-course__rating"><Star class="size-4 fill-current" />{{ ratingValue }}<span>· {{ ratingCount }} {{ __('ratings') }}</span></div>
 					<div class="product-course__outcomes">
 						<strong>{{ __('By the end of this course, you will be able to:') }}</strong>
 						<ul><li v-for="outcome in heroOutcomes" :key="outcome"><span><Check class="size-3.5" /></span>{{ outcome }}</li></ul>
@@ -120,12 +114,10 @@ const outline = createResource({
 
 watch(() => props.course.data?.name, () => outline.reload())
 
-const primaryInstructor = computed(() => props.course.data?.instructors?.[0])
 const numericRating = computed(() => { const value = Number.parseFloat(props.course.data?.rating || ''); return Number.isFinite(value) ? value : 0 })
 const ratingValue = computed(() => numericRating.value > 0 ? numericRating.value.toFixed(1) : '')
 const ratingCount = computed(() => props.course.data?.rating_count || 0)
 const roundedRating = computed(() => Math.round(numericRating.value))
-const instructorInitials = computed(() => { const name = primaryInstructor.value?.full_name || primaryInstructor.value?.name || ''; return name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() })
 const isKannadaCourse = computed(() => `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('kannada'))
 const isHindiCourse = computed(() => `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('hindi'))
 const courseLanguage = computed(() => isKannadaCourse.value ? 'Kannada' : isHindiCourse.value ? 'Hindi' : '')
@@ -211,11 +203,7 @@ onBeforeUnmount(() => pageObserver?.disconnect())
 .product-course__tag { display:inline-flex; align-items:center; gap:.45rem; padding:.45rem .875rem; border:1px solid var(--product-border); border-radius:9999px; background:rgba(255,255,255,.68); color:var(--product-brand-deep); font-size:.75rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
 .product-course__hero-copy h1 { max-width:48rem; margin-top:1.25rem; font-size:clamp(2.25rem,4.2vw,3.5rem); font-weight:800; line-height:1.08; letter-spacing:-.035em; text-wrap:balance; }
 .product-course__hero-copy > p { max-width:42rem; margin-top:1.125rem; font-size:clamp(1.0625rem,1.5vw,1.1875rem); line-height:1.6; }
-.product-course__author-row { display:flex; flex-wrap:wrap; align-items:center; gap:1rem; margin-top:1.5rem; }
-.product-course__author { display:flex; align-items:center; gap:.75rem; }
-.product-course__author > span { display:inline-flex; width:2.75rem; height:2.75rem; align-items:center; justify-content:center; border:1px solid var(--product-border); border-radius:50%; background:var(--product-brand-soft); color:var(--product-brand-deep); font-size:.8125rem; font-weight:800; }
-.product-course__author div { display:grid; gap:.1rem; }.product-course__author small { color:var(--product-muted); font-size:.75rem; font-weight:600; }.product-course__author strong { color:var(--product-ink); font-size:.9375rem; }
-.product-course__rating { display:inline-flex; align-items:center; gap:.4rem; padding-left:1.25rem; border-left:1px solid rgba(113,91,61,.2); color:#f59e0b; font-size:.875rem; font-weight:800; }.product-course__rating span { color:var(--product-body); }
+.product-course__rating { display:inline-flex; align-items:center; gap:.4rem; margin-top:1.5rem; color:#f59e0b; font-size:.875rem; font-weight:800; }.product-course__rating span { color:var(--product-body); }
 .product-course__outcomes { max-width:40rem; margin-top:1.75rem; padding-top:1.375rem; border-top:1px solid rgba(113,91,61,.18); }.product-course__outcomes > strong { display:block; margin-bottom:.75rem; color:var(--product-ink); font-family:var(--bhasha-font-display); font-size:.9375rem; }.product-course__outcomes ul { display:grid; gap:.625rem; }.product-course__outcomes li { display:flex; align-items:center; gap:.7rem; color:#383838; font-size:.875rem; font-weight:600; line-height:1.45; }.product-course__outcomes li span { display:inline-flex; width:1.5rem; height:1.5rem; flex:0 0 auto; align-items:center; justify-content:center; border:1px solid var(--product-border); border-radius:.5rem; background:var(--product-brand-soft); color:var(--product-brand-deep); }
 .product-course__enrollment { min-width:0; scroll-margin-top:8rem; }.product-course__enrollment :deep(.course-enrollment-card) { width:100%; border-color:var(--product-border); border-radius:1.5rem; box-shadow:0 24px 50px -12px rgba(108,92,231,.22),0 8px 24px -6px rgba(0,0,0,.08); }.product-course__enrollment :deep(.bhasha-primary) { min-height:3.25rem; border-radius:9999px; background:linear-gradient(135deg,var(--product-brand),var(--product-brand-deep)); font-weight:800; }
 .product-course__layout { display:grid; gap:3rem; padding-block:clamp(3.5rem,7vw,6rem); }.product-course__main { min-width:0; }.product-course__section { scroll-margin-top:8rem; }.product-course__section + .product-course__section { margin-top:5rem; }.product-course__kicker { display:block; margin-bottom:.75rem; color:var(--product-brand); font-size:.75rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }.product-course__section h2,.product-course__reviews h2 { font-size:clamp(1.75rem,2.5vw,2.5rem); font-weight:800; line-height:1.2; letter-spacing:-.025em; }.product-course__section h3 { margin-top:2.25rem; font-size:1.5rem; font-weight:800; }.product-course__prose { margin-top:1.25rem; font-size:1rem; line-height:1.7; }.product-course__prose :deep(p + p) { margin-top:1.25rem; }
@@ -228,6 +216,6 @@ onBeforeUnmount(() => pageObserver?.disconnect())
 .product-course__reviews :deep(> .mt-12) { margin-top:3rem; }.product-course__footer { border-top:1px solid var(--product-line); }.product-course__footer .product-course__shell { display:flex; min-height:6rem; align-items:center; justify-content:space-between; gap:1.5rem; color:var(--product-muted); font-size:.8125rem; }.product-course__footer .product-course__brand-logo { width:8.5rem; height:auto; }.product-course__footer a { color:var(--product-brand-deep); font-weight:700; }.product-course__footer .product-course__github-icon { width:1.25rem; height:1.25rem; }.product-course__floating-action { position:fixed; right:1rem; bottom:calc(4.75rem + env(safe-area-inset-bottom)); left:1rem; z-index:50; }
 @media (min-width:760px) { .product-course__reviews-grid { grid-template-columns:.8fr 1.2fr; } }
 @media (min-width:960px) { .product-course__hero-grid { grid-template-columns:minmax(0,1fr) 360px; gap:4rem; }.product-course__layout { grid-template-columns:minmax(0,1fr) 260px; gap:4.5rem; }.product-course__nav-card { position:sticky; top:9rem; }.product-course__floating-action { right:1.5rem; bottom:calc(1.5rem + env(safe-area-inset-bottom)); left:auto; } }
-@media (max-width:639px) { .product-course { padding-bottom:calc(11rem + env(safe-area-inset-bottom)); }.product-course__shell { padding-inline:1rem; }.product-course__rating { width:100%; padding-top:.75rem; padding-left:0; border-top:1px solid rgba(113,91,61,.2); border-left:0; }.product-course__chapter summary { grid-template-columns:2.25rem minmax(0,1fr); padding-inline:.75rem; }.product-course__chapter-count { grid-column:2; justify-self:start; }.product-course__chapter ul { padding-left:3.5rem; }.product-course__footer .product-course__shell { align-items:flex-start; flex-direction:column; justify-content:center; padding-block:1.5rem; } }
+@media (max-width:639px) { .product-course { padding-bottom:calc(11rem + env(safe-area-inset-bottom)); }.product-course__shell { padding-inline:1rem; }.product-course__chapter summary { grid-template-columns:2.25rem minmax(0,1fr); padding-inline:.75rem; }.product-course__chapter-count { grid-column:2; justify-self:start; }.product-course__chapter ul { padding-left:3.5rem; }.product-course__footer .product-course__shell { align-items:flex-start; flex-direction:column; justify-content:center; padding-block:1.5rem; } }
 @media (prefers-reduced-motion:reduce) { .product-course *,.product-course *::before,.product-course *::after { scroll-behavior:auto!important; transition-duration:.01ms!important; } }
 </style>

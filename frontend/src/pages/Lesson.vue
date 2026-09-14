@@ -257,23 +257,6 @@
 							</div>
 						</div>
 
-						<div v-if="!zenModeEnabled" class="flex items-center mt-4 md:mt-2">
-							<span
-								class="h-6 me-1"
-								:class="{
-									'avatar-group overlap': lesson.data.instructors?.length > 1,
-								}"
-							>
-								<UserAvatar
-									v-for="instructor in lesson.data.instructors"
-									:user="instructor"
-								/>
-							</span>
-							<CourseInstructors
-								v-if="lesson.data?.instructors"
-								:instructors="lesson.data.instructors"
-							/>
-						</div>
 
 						<div
 							v-if="
@@ -507,14 +490,12 @@ import {
 } from '@/utils/lessonProgress'
 import EditorJS from '@editorjs/editorjs'
 import LessonContent from '@/components/LessonContent.vue'
-import CourseInstructors from '@/components/CourseInstructors.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
 import Discussions from '@/components/Discussions.vue'
 import CertificationLinks from '@/components/CertificationLinks.vue'
 import VideoStatistics from '@/components/Modals/VideoStatistics.vue'
 import CourseOutline from '@/components/CourseOutline.vue'
 import StudentLessonSidebar from '@/components/StudentLessonSidebar.vue'
-import UserAvatar from '@/components/UserAvatar.vue'
 import Notes from '@/components/Notes/Notes.vue'
 import InlineLessonMenu from '@/components/Notes/InlineLessonMenu.vue'
 import { getLmsRoute } from '@/utils/basePath'

@@ -10,6 +10,7 @@ recursive-include lms *.html
 recursive-include lms *.ico
 recursive-include lms *.js
 recursive-include lms *.json
+recursive-include lms *.jpg
 recursive-include lms *.md
 recursive-include lms *.png
 recursive-include lms *.py
