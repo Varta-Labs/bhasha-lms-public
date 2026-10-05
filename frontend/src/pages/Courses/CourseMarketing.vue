@@ -9,7 +9,7 @@
 						<div class="guest-course__price-row">
 							<span v-if="hasEarlyBirdOffer" class="guest-course__offer-label">{{ __('Early bird offer') }}</span>
 							<strong>{{ priceLabel }}</strong>
-							<s v-if="hasEarlyBirdOffer">₹2,999</s>
+							<s v-if="hasEarlyBirdOffer">₹4,999</s>
 							<span>{{ __('Lifetime access') }}</span>
 						</div>
 						<a :href="signupUrl" class="guest-course__primary-action">
@@ -238,7 +238,11 @@ const isHindiCourse = computed(() =>
 )
 
 const hasEarlyBirdOffer = computed(() =>
-	Boolean(props.course.data?.paid_course && (isKannadaCourse.value || isHindiCourse.value)),
+	Boolean(
+		props.course.data?.paid_course &&
+			props.course.data.currency === 'INR' &&
+			Number(props.course.data.course_price) === 1999,
+	),
 )
 
 const courseLanguage = computed(() => {

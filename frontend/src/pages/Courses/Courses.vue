@@ -32,7 +32,7 @@
 			</Dropdown>
 		</template>
 	</LayoutHeader>
-	<main class="bhasha-courses-page flex min-h-0 flex-1 flex-col">
+	<main class="bhasha-courses-page flex flex-col">
 		<section class="bhasha-courses-toolbar">
 			<div class="bhasha-courses-toolbar-heading">
 				<div>
@@ -516,14 +516,9 @@ usePageMeta(() => {
 
 <style scoped>
 .bhasha-courses-page {
+	flex: 1 0 auto;
 	padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 3vw, 2rem) 2.5rem;
-	background:
-		radial-gradient(
-			circle at 10% 0%,
-			rgba(129, 80, 223, 0.075),
-			transparent 23rem
-		),
-		var(--bhasha-page);
+	background: var(--bhasha-page);
 }
 
 .bhasha-courses-toolbar,

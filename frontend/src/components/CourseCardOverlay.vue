@@ -31,7 +31,7 @@
 			</div>
 			<div class="mb-5 flex items-baseline gap-3">
 				<strong class="text-3xl font-bold tracking-tight text-ink-gray-9">{{ priceLabel }}</strong>
-				<s v-if="hasEarlyBirdOffer" class="text-lg font-semibold text-ink-gray-5">₹2,999</s>
+				<s v-if="hasEarlyBirdOffer" class="text-lg font-semibold text-ink-gray-5">₹4,999</s>
 			</div>
 			<div v-if="!readOnlyMode">
 				<div v-if="course.data?.membership" class="space-y-2 mb-8">
@@ -300,8 +300,11 @@ const priceLabel = computed<string>(() => {
 })
 
 const hasEarlyBirdOffer = computed<boolean>(() => {
-	const identity = `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase()
-	return Boolean(props.course.data?.paid_course && (identity.includes('hindi') || identity.includes('kannada')))
+	return Boolean(
+		props.course.data?.paid_course &&
+			props.course.data.currency === 'INR' &&
+			Number(props.course.data.course_price) === 1999,
+	)
 })
 
 const guestEnrollLabel = computed(() => __('Sign up and Enroll'))
