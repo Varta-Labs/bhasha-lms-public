@@ -114,14 +114,16 @@
 						</div>
 					</div>
 				</div>
-				<div v-if="type == 'cart'" class="mb-5 space-y-3">
+				<div v-if="type == 'cart'" class="billing-summary-items">
 					<div
 						v-for="item in orderSummary.data.items"
 						:key="item.course"
-						class="flex justify-between gap-4 text-sm"
+						class="billing-summary-item"
 					>
-						<span>{{ item.title }}</span
-						><strong>{{ item.amount_formatted }}</strong>
+						<span class="billing-summary-item__title">{{ item.title }}</span>
+						<strong class="billing-summary-item__price">{{
+							item.amount_formatted
+						}}</strong>
 					</div>
 					<p
 						v-if="orderSummary.data.owned_courses.length"
@@ -144,7 +146,7 @@
 						"
 						class="billing-summary-line"
 					>
-						<span>{{ __('Original amount') }}</span>
+						<span>{{ __('Amount') }}</span>
 						<strong>
 							{{ orderSummary.data.original_amount_formatted }}
 						</strong>
@@ -658,6 +660,38 @@ usePageMeta(() => {
 	font-size: 1.05rem;
 	font-weight: 700;
 	line-height: 1.35;
+}
+
+.billing-summary-items {
+	padding: 1.25rem 1.5rem;
+	border-bottom: 1px solid #ede9f2;
+}
+
+.billing-summary-item {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: baseline;
+	gap: 1rem;
+	padding-block: 0.75rem;
+	font-size: 0.875rem;
+	line-height: 1.6;
+}
+
+.billing-summary-item + .billing-summary-item {
+	border-top: 1px solid #f0edf5;
+}
+
+.billing-summary-item__title {
+	min-width: 0;
+	color: #625d68;
+	overflow-wrap: anywhere;
+}
+
+.billing-summary-item__price {
+	color: #383838;
+	font-weight: 700;
+	white-space: nowrap;
+	text-align: right;
 }
 
 .billing-summary-lines {

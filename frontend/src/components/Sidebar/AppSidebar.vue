@@ -8,7 +8,6 @@
 			:class="sidebarStore.isSidebarCollapsed ? 'items-center' : ''"
 		>
 			<UserDropdown :isCollapsed="sidebarStore.isSidebarCollapsed" />
-			<CartLink class="mx-2 mb-3" />
 			<div class="flex flex-col" v-if="sidebarSettings.data">
 				<div v-for="link in sidebarLinks" class="mx-2 mb-3">
 					<div
@@ -298,7 +297,6 @@
 </template>
 
 <script setup>
-import CartLink from '@/components/CartLink.vue'
 import { getSidebarLinks } from '@/utils'
 import { usersStore } from '@/stores/user'
 import { sessionStore } from '@/stores/session'
