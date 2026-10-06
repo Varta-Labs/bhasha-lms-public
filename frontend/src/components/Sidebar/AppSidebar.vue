@@ -143,7 +143,7 @@
 							username: userResource.data?.username,
 						},
 					}"
-					class="bhasha-sidebar-icon-button flex items-center justify-center"
+					class="bhasha-sidebar-icon-button flex items-center justify-center self-center"
 				>
 					<User class="size-4 stroke-1.5 text-ink-gray-7 cursor-pointer" />
 				</router-link>
