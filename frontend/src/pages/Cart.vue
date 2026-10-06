@@ -64,6 +64,7 @@
 								params: { courseName: item.course },
 							}"
 							class="cart-thumbnail"
+							:class="{ 'cart-thumbnail--placeholder': !item.image }"
 							:aria-label="item.title"
 						>
 							<img v-if="item.image" :src="item.image" alt="" loading="lazy" />
@@ -412,25 +413,28 @@ usePageMeta({ title: __('Your cart') })
 }
 .cart-item {
 	display: grid;
-	grid-template-columns: 8rem minmax(0, 1fr);
+	grid-template-columns: 10rem minmax(0, 1fr);
 	gap: 1rem 1.25rem;
 	padding: 1.5rem;
 }
 .cart-thumbnail {
-	display: grid;
+	display: block;
 	grid-row: span 2;
 	align-self: start;
-	aspect-ratio: 4 / 3;
 	overflow: hidden;
-	place-items: center;
 	border-radius: 0.8rem;
-	background: #f0edff;
 	color: #6c5ce7;
 }
+.cart-thumbnail--placeholder {
+	display: grid;
+	aspect-ratio: 16 / 9;
+	place-items: center;
+	background: #f0edff;
+}
 .cart-thumbnail img {
+	display: block;
 	width: 100%;
-	height: 100%;
-	object-fit: contain;
+	height: auto;
 }
 .cart-item-content {
 	min-width: 0;
@@ -611,7 +615,7 @@ usePageMeta({ title: __('Your cart') })
 		padding-inline: 0.85rem;
 	}
 	.cart-item {
-		grid-template-columns: 5rem minmax(0, 1fr);
+		grid-template-columns: 6.5rem minmax(0, 1fr);
 		padding: 1.25rem;
 		gap: 0.75rem;
 	}
