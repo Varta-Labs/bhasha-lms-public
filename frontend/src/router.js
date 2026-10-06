@@ -6,6 +6,12 @@ import { getLmsBasePath } from './utils/basePath'
 
 const routes = [
 	{
+		path: '/cart',
+		name: 'Cart',
+		component: () => import('@/pages/Cart.vue'),
+		meta: { public: true, noSidebar: true },
+	},
+	{
 		path: '/',
 		name: 'Home',
 		component: () => import('@/pages/Home/Home.vue'),
@@ -65,6 +71,7 @@ const routes = [
 		name: 'Billing',
 		component: () => import('@/pages/Billing.vue'),
 		props: true,
+		meta: { public: true, noSidebar: true },
 	},
 	{
 		path: '/payment-success/:type/:name',
@@ -107,8 +114,7 @@ const routes = [
 			{
 				name: 'ProfileEvaluationSchedule',
 				path: 'schedule',
-				component: () =>
-					import('@/pages/ProfileEvaluationSchedule.vue'),
+				component: () => import('@/pages/ProfileEvaluationSchedule.vue'),
 			},
 		],
 	},
@@ -216,18 +222,14 @@ const routes = [
 		path: '/programming-exercises/submissions',
 		name: 'ProgrammingExerciseSubmissions',
 		component: () =>
-			import(
-				'@/pages/ProgrammingExercises/ProgrammingExerciseSubmissions.vue'
-			),
+			import('@/pages/ProgrammingExercises/ProgrammingExerciseSubmissions.vue'),
 		props: true,
 	},
 	{
 		path: '/programming-exercises/:exerciseID/submission/:submissionID',
 		name: 'ProgrammingExerciseSubmission',
 		component: () =>
-			import(
-				'@/pages/ProgrammingExercises/ProgrammingExerciseSubmission.vue'
-			),
+			import('@/pages/ProgrammingExercises/ProgrammingExerciseSubmission.vue'),
 		props: true,
 	},
 	{

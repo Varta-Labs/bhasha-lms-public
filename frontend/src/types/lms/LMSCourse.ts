@@ -3,6 +3,8 @@ import { CourseInstructor } from './CourseInstructor'
 import { RelatedCourses } from './RelatedCourses'
 
 export interface LMSCourse {
+	addon_for_course?: string
+	bundle_discount_percent?: number
 	creation: string
 	name: string
 	modified: string

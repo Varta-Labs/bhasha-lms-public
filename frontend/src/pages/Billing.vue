@@ -20,7 +20,11 @@
 					<ChevronLeft class="size-4 stroke-2" />
 					{{
 						__('Back to {0}').format(
-							type == 'course' ? __('course') : __('batch'),
+							type == 'cart'
+								? __('cart')
+								: type == 'course'
+									? __('course')
+									: __('batch'),
 						)
 					}}
 				</a>
@@ -71,6 +75,12 @@
 						variant="solid"
 						size="md"
 						:loading="paymentLink.loading"
+						:disabled="
+							orderSummary.loading ||
+							(type == 'cart' &&
+								(!orderSummary.data.items.length ||
+									!!orderSummary.data.unavailable_courses.length))
+						"
 						@click="generatePaymentLink()"
 					>
 						<template #prefix>
@@ -104,6 +114,29 @@
 						</div>
 					</div>
 				</div>
+				<div v-if="type == 'cart'" class="mb-5 space-y-3">
+					<div
+						v-for="item in orderSummary.data.items"
+						:key="item.course"
+						class="flex justify-between gap-4 text-sm"
+					>
+						<span>{{ item.title }}</span
+						><strong>{{ item.amount_formatted }}</strong>
+					</div>
+					<p
+						v-if="orderSummary.data.owned_courses.length"
+						class="text-sm text-green-700"
+					>
+						{{ __('Courses you already own will not be charged.') }}
+					</p>
+					<p v-if="orderSummary.data.unavailable_courses.length" role="alert">
+						{{
+							__(
+								'Some courses are unavailable. Return to your cart to remove them.',
+							)
+						}}
+					</p>
+				</div>
 				<div class="billing-summary-lines">
 					<div
 						v-if="
@@ -120,7 +153,9 @@
 						v-if="orderSummary.data.discount_amount"
 						class="billing-summary-line is-discount"
 					>
-						<span>{{ __('Discount') }}</span>
+						<span>{{
+							orderSummary.data.discount_label || __('Discount')
+						}}</span>
 						<strong>- {{ orderSummary.data.discount_amount_formatted }}</strong>
 					</div>
 					<div
@@ -182,6 +217,8 @@ import {
 	toast,
 } from 'frappe-ui'
 import { reactive, inject, onMounted, computed } from 'vue'
+import { useCart } from '@/stores/cart'
+import { useRouter } from 'vue-router'
 import { sessionStore } from '../stores/session'
 import Link from '@/components/Controls/Link.vue'
 import LMSLogo from '@/components/Icons/LMSLogo.vue'
@@ -198,6 +235,8 @@ import {
 } from 'lucide-vue-next'
 
 const user = inject('$user')
+const cart = useCart()
+const router = useRouter()
 const { brand } = sessionStore()
 const { capture } = useTelemetry()
 
@@ -206,7 +245,12 @@ onMounted(() => {
 	script.src = `https://checkout.razorpay.com/v1/checkout.js`
 	document.body.appendChild(script)
 	if (user.data?.name) {
-		access.submit()
+		if (props.type == 'course') {
+			cart.add(props.name)
+			router.replace({ name: 'Cart' })
+		} else if (props.type == 'cart' && !cart.count) {
+			router.replace({ name: 'Cart' })
+		} else access.submit()
 	} else {
 		window.location.replace(signupUrl.value)
 	}
@@ -228,13 +272,18 @@ const signupUrl = computed(() =>
 )
 
 const backLink = computed(() =>
-	props.type == 'course'
-		? getLmsRoute(`courses/${props.name}`)
-		: getLmsRoute(`batches/${props.name}`),
+	props.type == 'cart'
+		? getLmsRoute('cart')
+		: props.type == 'course'
+			? getLmsRoute(`courses/${props.name}`)
+			: getLmsRoute(`batches/${props.name}`),
 )
 
 const access = createResource({
-	url: 'lms.lms.api.validate_billing_access',
+	url:
+		props.type == 'cart'
+			? 'lms.lms.cart.get_checkout_access'
+			: 'lms.lms.api.validate_billing_access',
 	params: {
 		billing_type: props.type,
 		name: props.name,
@@ -246,8 +295,17 @@ const access = createResource({
 })
 
 const orderSummary = createResource({
-	url: 'lms.lms.utils.get_order_summary',
+	url:
+		props.type == 'cart'
+			? 'lms.lms.cart.get_cart_summary'
+			: 'lms.lms.utils.get_order_summary',
 	makeParams(values) {
+		if (props.type == 'cart')
+			return {
+				courses: cart.courses,
+				coupon_code: cart.couponCode || null,
+				country: billingDetails.country,
+			}
 		return {
 			doctype: props.type == 'batch' ? 'LMS Batch' : 'LMS Course',
 			docname: props.name,
@@ -269,8 +327,19 @@ const setBillingDetails = (data) => {
 }
 
 const paymentLink = createResource({
-	url: 'lms.lms.payments.get_payment_link',
+	url:
+		props.type == 'cart'
+			? 'lms.lms.cart.get_cart_payment_link'
+			: 'lms.lms.payments.get_payment_link',
 	makeParams(values) {
+		if (props.type == 'cart')
+			return {
+				courses: cart.courses,
+				address: billingDetails,
+				coupon_code: cart.couponCode || null,
+				expected_total: orderSummary.data.total_amount,
+				expected_currency: orderSummary.data.currency,
+			}
 		let data = {
 			doctype: props.type == 'batch' ? 'LMS Batch' : 'LMS Course',
 			docname: props.name,
@@ -295,6 +364,7 @@ const generatePaymentLink = () => {
 			},
 			onError(err) {
 				toast.error(err.messages?.[0] || err)
+				orderSummary.submit()
 			},
 		},
 	)

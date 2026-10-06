@@ -920,6 +920,8 @@ def get_course_fields():
 		"category",
 		"status",
 		"paid_course",
+		"addon_for_course",
+		"bundle_discount_percent",
 		"paid_certificate",
 		"course_price",
 		"currency",

@@ -25,13 +25,19 @@
 					hasEarlyBirdOffer
 						? __('Early bird offer')
 						: course.data?.paid_course
-						? __('Course fee')
-						: __('Full course access')
+							? __('Course fee')
+							: __('Full course access')
 				}}
 			</div>
 			<div class="mb-5 flex items-baseline gap-3">
-				<strong class="text-3xl font-bold tracking-tight text-ink-gray-9">{{ priceLabel }}</strong>
-				<s v-if="hasEarlyBirdOffer" class="text-lg font-semibold text-ink-gray-5">₹4,999</s>
+				<strong class="text-3xl font-bold tracking-tight text-ink-gray-9">{{
+					priceLabel
+				}}</strong>
+				<s
+					v-if="hasEarlyBirdOffer"
+					class="text-lg font-semibold text-ink-gray-5"
+					>₹4,999</s
+				>
 			</div>
 			<div v-if="!readOnlyMode">
 				<div v-if="course.data?.membership" class="space-y-2 mb-8">
@@ -49,11 +55,7 @@
 							},
 						}"
 					>
-						<Button
-							variant="solid"
-							size="md"
-							class="bhasha-primary w-full"
-						>
+						<Button variant="solid" size="md" class="bhasha-primary w-full">
 							<template #prefix>
 								<BookText class="size-4 stroke-1.5" />
 							</template>
@@ -62,62 +64,31 @@
 							</span>
 						</Button>
 					</router-link>
-					<CertificationLinks
-						:courseName="course.data.name"
-						class="w-full"
-					/>
+					<CertificationLinks :courseName="course.data.name" class="w-full" />
 				</div>
-				<a
-					v-else-if="course.data?.paid_course && !isAdmin && !user.data"
-					:href="signupUrl"
-				>
-					<Button
-						variant="solid"
-						size="md"
-						class="bhasha-primary mb-8 w-full"
-					>
-						<template #prefix>
-							<CreditCard class="size-4 stroke-1.5" />
-						</template>
-						<span>
-							{{ guestEnrollLabel }}
-						</span>
-					</Button>
-				</a>
-				<router-link
+				<Button
 					v-else-if="course.data?.paid_course && !isAdmin"
-					:to="{
-						name: 'Billing',
-						params: {
-							type: 'course',
-							name: course.data.name,
-						},
-					}"
+					variant="solid"
+					size="md"
+					class="bhasha-primary mb-8 w-full"
+					@click="addToCart(course.data.name)"
 				>
-					<Button
-						variant="solid"
-						size="md"
-						class="bhasha-primary mb-8 w-full"
-					>
-						<template #prefix>
-							<CreditCard class="size-4 stroke-1.5" />
-						</template>
-						<span>
-							{{ enrollLabel }}
-						</span>
-					</Button>
-				</router-link>
+					<template #prefix
+						><ShoppingCart class="size-4 stroke-1.5"
+					/></template>
+					{{
+						cart.courses.includes(course.data.name)
+							? __('View cart')
+							: __('Add to cart')
+					}}
+				</Button>
 				<Badge
 					v-else-if="course.data?.disable_self_learning && !isAdmin"
 					theme="blue"
 					size="lg"
 					class="mb-4"
 				>
-					{{
-						__(
-							'Please contact support to enroll',
-						)
-					}}
+					{{ __('Please contact support to enroll') }}
 				</Badge>
 				<Button
 					v-else-if="!isAdmin"
@@ -146,26 +117,62 @@
 					{{ __('Get Certificate') }}
 				</Button>
 			</div>
+			<section
+				v-if="course.data?.membership && addon.data?.suggestions?.length"
+				class="mb-5 rounded-xl bg-purple-50 p-4"
+			>
+				<h3 class="font-semibold">{{ __('Add a practice pack') }}</h3>
+				<div
+					v-for="item in addon.data.suggestions"
+					:key="item.course"
+					class="mt-3"
+				>
+					<p class="text-sm">{{ item.title }}</p>
+					<p class="my-2 text-sm">
+						{{ item.amount_formatted
+						}}<span v-if="item.discount_amount">
+							· {{ __('Save') }} {{ item.discount_amount_formatted }}</span
+						>
+					</p>
+					<Button class="w-full" @click="addToCart(item.course)">{{
+						__('Add to cart')
+					}}</Button>
+				</div>
+			</section>
 			<section class="course-includes">
 				<div class="mb-3 text-sm font-semibold text-ink-gray-9">
 					{{ __('This course includes:') }}
 				</div>
 				<div class="course-include-row">
-					<Users class="size-4.5 stroke-2 shrink-0 text-indigo-600 dark:text-indigo-400" />
-					<span>{{ enrolledLabel ? `${enrolledLabel} ${__('enrolled')}` : __('Active learner community') }}</span>
+					<Users
+						class="size-4.5 stroke-2 shrink-0 text-indigo-600 dark:text-indigo-400"
+					/>
+					<span>{{
+						enrolledLabel
+							? `${enrolledLabel} ${__('enrolled')}`
+							: __('Active learner community')
+					}}</span>
 				</div>
 				<div class="course-include-row">
 					<MonitorPlay
 						class="size-4.5 stroke-2 shrink-0 text-bhasha-purple dark:text-purple-400"
 					/>
-					<span>{{ course.data?.video_link ? __('On demand course video') : __('On demand practice audio & video') }}</span>
+					<span>{{
+						course.data?.video_link
+							? __('On demand course video')
+							: __('On demand practice audio & video')
+					}}</span>
 				</div>
 				<div class="course-include-row">
 					<BookOpen
 						class="size-4.5 stroke-2 shrink-0 text-emerald-600 dark:text-emerald-400"
 					/>
 					<span>
-						{{ course.data?.lessons ? `${course.data.lessons} ${course.data.lessons === 1 ? __('Lesson') : __('Lessons')}` : __('Comprehensive structured modules') }}
+						{{
+							course.data?.lessons
+								? `${course.data.lessons} ${course.data.lessons === 1 ? __('Lesson') : __('Lessons')}`
+								: __('Comprehensive structured modules')
+						}}
 					</span>
 				</div>
 				<div class="course-include-row">
@@ -173,15 +180,23 @@
 						class="size-4.5 stroke-2 shrink-0 text-amber-500 dark:text-amber-400"
 					/>
 					<span>
-						{{ (course.data?.quiz_count || 0) > 0 ? `${course.data.quiz_count} ${course.data.quiz_count === 1 ? __('Quiz topic') : __('Quiz topics')}` : __('Interactive exercises & roleplays') }}
+						{{
+							(course.data?.quiz_count || 0) > 0
+								? `${course.data.quiz_count} ${course.data.quiz_count === 1 ? __('Quiz topic') : __('Quiz topics')}`
+								: __('Interactive exercises & roleplays')
+						}}
 					</span>
 				</div>
 				<div class="course-include-row">
-					<Award class="size-4.5 stroke-2 shrink-0 text-rose-500 dark:text-rose-400" />
+					<Award
+						class="size-4.5 stroke-2 shrink-0 text-rose-500 dark:text-rose-400"
+					/>
 					<span>{{ __('Verifiable certificate of completion') }}</span>
 				</div>
 				<div class="course-include-row">
-					<BookText class="size-4.5 stroke-2 shrink-0 text-cyan-600 dark:text-cyan-400" />
+					<BookText
+						class="size-4.5 stroke-2 shrink-0 text-cyan-600 dark:text-cyan-400"
+					/>
 					<span>{{ __('Full lifetime online access') }}</span>
 				</div>
 			</section>
@@ -193,18 +208,18 @@ import {
 	Award,
 	BookOpen,
 	BookText,
-	CreditCard,
+	ShoppingCart,
 	GraduationCap,
 	HelpCircle,
 	MonitorPlay,
 	Users,
 } from 'lucide-vue-next'
-import { computed, inject } from 'vue'
+import { computed, inject, watch } from 'vue'
+import { useCart } from '@/stores/cart'
 import { Badge, Button, call, createResource, toast } from 'frappe-ui'
 import { useRouter } from 'vue-router'
 import CertificationLinks from '@/components/CertificationLinks.vue'
 import { useTelemetry } from 'frappe-ui/frappe'
-import { getLmsRoute, getSignupUrl } from '@/utils/basePath'
 import type {
 	CourseDetails,
 	CourseInstructorInfo,
@@ -213,6 +228,11 @@ import type {
 } from '@/types/api'
 
 const router = useRouter()
+const cart = useCart()
+function addToCart(course: string) {
+	cart.add(course)
+	router.push({ name: 'Cart' })
+}
 const user = inject<SessionUser>('$user')!
 const readOnlyMode = (window as Window & { read_only_mode?: boolean })
 	.read_only_mode
@@ -225,23 +245,38 @@ const props = withDefaults(
 	{},
 )
 
+const addon = createResource({
+	url: 'lms.lms.cart.get_cart_summary',
+	makeParams: () => ({ courses: [props.course.data?.name] }),
+})
+watch(
+	() => props.course.data?.name,
+	(name) => {
+		if (name) addon.submit()
+	},
+	{ immediate: true },
+)
+
 const video_link = computed<string | undefined>(() => {
 	let link = props.course.data?.video_link
-	if (!link && (props.course.data?.name?.includes('kannada') || props.course.data?.title?.includes('Kannada'))) {
+	if (
+		!link &&
+		!props.course.data?.addon_for_course &&
+		(props.course.data?.name?.includes('kannada') ||
+			props.course.data?.title?.includes('Kannada'))
+	) {
 		link = 'dQw4w9WgXcQ'
 	}
 	if (!link) return undefined
-	return link.startsWith('http') ? link : 'https://www.youtube.com/embed/' + link
+	return link.startsWith('http')
+		? link
+		: 'https://www.youtube.com/embed/' + link
 })
 
 const previewImage = computed<string | undefined>(() => {
 	if (props.course.data?.image) return props.course.data.image
 	return `${import.meta.env.BASE_URL}kannada-course-hero-v1.png`
 })
-
-const signupUrl = computed(() =>
-	getSignupUrl(getLmsRoute(`billing/course/${props.course.data?.name || ''}`)),
-)
 
 function enrollStudent() {
 	if (!user.data) {
@@ -275,8 +310,7 @@ function enrollStudent() {
 			}, 1000)
 		})
 		.catch((err: { messages?: string[] } | string) => {
-			const msg =
-				typeof err === 'string' ? err : (err.messages?.[0] ?? 'Error')
+			const msg = typeof err === 'string' ? err : (err.messages?.[0] ?? 'Error')
 			toast.warning(__(msg))
 			console.error(err)
 		})
@@ -284,30 +318,27 @@ function enrollStudent() {
 
 const is_instructor = (): boolean => {
 	let user_is_instructor = false
-	props.course.data?.instructors.forEach(
-		(instructor: CourseInstructorInfo) => {
-			if (!user_is_instructor && instructor.name == user.data?.name) {
-				user_is_instructor = true
-			}
-		},
-	)
+	props.course.data?.instructors.forEach((instructor: CourseInstructorInfo) => {
+		if (!user_is_instructor && instructor.name == user.data?.name) {
+			user_is_instructor = true
+		}
+	})
 	return user_is_instructor
 }
 
 const priceLabel = computed<string>(() => {
-	if (props.course.data?.paid_course) return props.course.data?.price || __('Paid course')
+	if (props.course.data?.paid_course)
+		return props.course.data?.price || __('Paid course')
 	return __('Free')
 })
 
 const hasEarlyBirdOffer = computed<boolean>(() => {
 	return Boolean(
 		props.course.data?.paid_course &&
-			props.course.data.currency === 'INR' &&
-			Number(props.course.data.course_price) === 1999,
+		props.course.data.currency === 'INR' &&
+		Number(props.course.data.course_price) === 1999,
 	)
 })
-
-const guestEnrollLabel = computed(() => __('Sign up and Enroll'))
 
 const enrollLabel = computed(() => `${__('Enroll for')} ${priceLabel.value}`)
 

@@ -11,6 +11,7 @@
 			<slot name="left-header" />
 		</div>
 		<div class="flex items-center gap-2">
+			<CartLink />
 			<slot name="right-header" />
 		</div>
 	</header>
@@ -18,9 +19,13 @@
 
 <script setup lang="ts">
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
+import CartLink from '@/components/CartLink.vue'
 
-withDefaults(defineProps<{ isLoading?: boolean; variant?: 'product' | 'marketing' }>(), {
-	isLoading: false,
-	variant: 'product',
-})
+withDefaults(
+	defineProps<{ isLoading?: boolean; variant?: 'product' | 'marketing' }>(),
+	{
+		isLoading: false,
+		variant: 'product',
+	},
+)
 </script>

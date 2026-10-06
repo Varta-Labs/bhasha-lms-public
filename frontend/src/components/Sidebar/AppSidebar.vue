@@ -8,6 +8,7 @@
 			:class="sidebarStore.isSidebarCollapsed ? 'items-center' : ''"
 		>
 			<UserDropdown :isCollapsed="sidebarStore.isSidebarCollapsed" />
+			<CartLink class="mx-2 mb-3" />
 			<div class="flex flex-col" v-if="sidebarSettings.data">
 				<div v-for="link in sidebarLinks" class="mx-2 mb-3">
 					<div
@@ -89,7 +90,7 @@
 			>
 				{{
 					__(
-						'This site is being updated. You will not be able to make any changes. Full access will be restored shortly.'
+						'This site is being updated. You will not be able to make any changes. Full access will be restored shortly.',
 					)
 				}}
 			</div>
@@ -161,7 +162,11 @@
 			/>
 			<div
 				class="flex gap-1"
-				:class="sidebarStore.isSidebarCollapsed ? 'flex-col items-center' : 'items-center'"
+				:class="
+					sidebarStore.isSidebarCollapsed
+						? 'flex-col items-center'
+						: 'items-center'
+				"
 			>
 				<a
 					href="https://github.com/Varta-Labs/bhasha-lms-public"
@@ -176,12 +181,16 @@
 				<router-link
 					:to="{ name: 'PrivacyPolicy' }"
 					class="flex min-h-8 items-center gap-2 rounded px-2 text-xs text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9"
-					:class="sidebarStore.isSidebarCollapsed ? 'size-8 justify-center' : 'flex-1'"
+					:class="
+						sidebarStore.isSidebarCollapsed ? 'size-8 justify-center' : 'flex-1'
+					"
 					:aria-label="__('Privacy Policy')"
 					:title="__('Privacy Policy')"
 				>
 					<ShieldCheck class="size-4 shrink-0 stroke-1.5" />
-					<span v-if="!sidebarStore.isSidebarCollapsed">{{ __('Privacy Policy') }}</span>
+					<span v-if="!sidebarStore.isSidebarCollapsed">{{
+						__('Privacy Policy')
+					}}</span>
 				</router-link>
 			</div>
 
@@ -205,7 +214,7 @@
 							>
 								{{
 									__(
-										'This site is being updated. You will not be able to make any changes. Full access will be restored shortly.'
+										'This site is being updated. You will not be able to make any changes. Full access will be restored shortly.',
 									)
 								}}
 							</div>
@@ -289,6 +298,7 @@
 </template>
 
 <script setup>
+import CartLink from '@/components/CartLink.vue'
 import { getSidebarLinks } from '@/utils'
 import { usersStore } from '@/stores/user'
 import { sessionStore } from '@/stores/session'
@@ -387,13 +397,13 @@ const updateSidebarLinksVisibility = () => {
 					if (!parseInt(data[key])) {
 						sidebarLinks.value.forEach((link) => {
 							link.items = link.items.filter(
-								(item) => item.label.toLowerCase().split(' ').join('_') !== key
+								(item) => item.label.toLowerCase().split(' ').join('_') !== key,
 							)
 						})
 					}
 				})
 			},
-		}
+		},
 	)
 }
 
@@ -462,7 +472,7 @@ const toggleSidebar = () => {
 	sidebarStore.isSidebarCollapsed = !sidebarStore.isSidebarCollapsed
 	localStorage.setItem(
 		'isSidebarCollapsed',
-		JSON.stringify(sidebarStore.isSidebarCollapsed)
+		JSON.stringify(sidebarStore.isSidebarCollapsed),
 	)
 }
 
@@ -470,7 +480,7 @@ const toggleWebPages = () => {
 	sidebarStore.isWebpagesCollapsed = !sidebarStore.isWebpagesCollapsed
 	localStorage.setItem(
 		'isWebpagesCollapsed',
-		JSON.stringify(sidebarStore.isWebpagesCollapsed)
+		JSON.stringify(sidebarStore.isWebpagesCollapsed),
 	)
 }
 
@@ -732,7 +742,7 @@ const profileIsComplete = computed(() => {
 const showAppointmentIcon = computed(() => {
 	let isTrialPlan = userResource.data?.site_info?.plan?.is_trial_plan
 	let trialEndDate = calculateTrialEndDays(
-		userResource.data?.site_info?.trial_end_date
+		userResource.data?.site_info?.trial_end_date,
 	)
 	return (
 		userResource.data?.is_system_manager &&
@@ -755,7 +765,7 @@ const calculateTrialEndDays = (trialEndDate) => {
 const redirectToAppointmentScreen = () => {
 	window.open(
 		'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0c7Z3XIpW1WgbeIuktSaoX6qudoYuSdRbIlJty5TW7p4IZaOk5viHQGwTNi6HpNVqzOZOTHcle',
-		'_blank'
+		'_blank',
 	)
 }
 

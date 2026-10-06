@@ -5,11 +5,71 @@
 			<LMSLogo class="h-8 !max-h-none" />
 			<div class="payment-success-secure">
 				<ShieldCheck class="size-3.5 stroke-2" />
-				{{ __('Payment confirmed') }}
+				{{
+					type == 'order' && orderStatus.data?.status != 'Paid'
+						? __('Checking payment')
+						: __('Payment confirmed')
+				}}
 			</div>
 		</header>
 
-		<main class="payment-success-card">
+		<main v-if="type == 'order'" class="payment-success-card">
+			<template v-if="orderStatus.data?.status == 'Paid'">
+				<div class="payment-success-icon"><Check class="size-8" /></div>
+				<h1>{{ __('Your courses are ready') }}</h1>
+				<p>
+					{{
+						__(
+							'Your payment was confirmed. All courses below are available in your account.',
+						)
+					}}
+				</p>
+				<router-link
+					v-for="course in orderStatus.data.courses"
+					:key="course.course"
+					:to="{ name: 'CourseDetail', params: { courseName: course.course } }"
+					class="payment-success-detail"
+				>
+					<BookOpen class="size-5" />
+					<div>
+						<strong>{{ course.title }}</strong
+						><span>{{ __('Start learning') }}</span>
+					</div>
+					<ArrowRight class="ml-auto size-4" />
+				</router-link>
+				<router-link :to="{ name: 'Courses' }" class="payment-success-action"
+					>{{ __('View my courses') }}<ArrowRight class="size-4"
+				/></router-link>
+			</template>
+			<template v-else>
+				<h1>
+					{{
+						orderError
+							? __('Unable to check this order')
+							: __('Confirming your payment')
+					}}
+				</h1>
+				<p role="status">
+					{{
+						orderError ||
+						__(
+							'Access will appear here once your payment is confirmed. You can safely return to this page later.',
+						)
+					}}
+				</p>
+				<button
+					class="payment-success-action"
+					:disabled="orderStatus.loading"
+					@click="orderStatus.submit()"
+				>
+					{{ __('Check again') }}
+				</button>
+				<router-link :to="{ name: 'Cart' }" class="mt-5 block text-sm">{{
+					__('Return to cart')
+				}}</router-link>
+			</template>
+		</main>
+		<main v-else class="payment-success-card">
 			<div class="payment-success-icon" aria-hidden="true">
 				<Check class="size-8 stroke-[2.2]" />
 			</div>
@@ -43,7 +103,7 @@
 </template>
 
 <script setup>
-import { usePageMeta } from 'frappe-ui'
+import { createResource, usePageMeta } from 'frappe-ui'
 import {
 	ArrowRight,
 	BookOpen,
@@ -52,7 +112,8 @@ import {
 	ShieldCheck,
 	Users,
 } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useCart } from '@/stores/cart'
 import LMSLogo from '@/components/Icons/LMSLogo.vue'
 import { sessionStore } from '@/stores/session'
 import { getLmsRoute } from '@/utils/basePath'
@@ -61,6 +122,31 @@ const props = defineProps({
 	type: { type: String, required: true },
 	name: { type: String, required: true },
 })
+
+const cart = useCart()
+const orderError = ref('')
+let pollTimer
+let attempts = 0
+const orderStatus = createResource({
+	url: 'lms.lms.cart.get_order_status',
+	makeParams: () => ({ order_name: props.name }),
+	onSuccess(data) {
+		orderError.value = ''
+		if (data.status == 'Paid') {
+			cart.removePurchased(data.courses.map((c) => c.course))
+			clearTimeout(pollTimer)
+		} else if (++attempts < 20) {
+			pollTimer = setTimeout(() => orderStatus.submit(), 3000)
+		}
+	},
+	onError(err) {
+		orderError.value = err.messages?.[0] || err.message || String(err)
+	},
+})
+onMounted(() => {
+	if (props.type == 'order') orderStatus.submit()
+})
+onUnmounted(() => clearTimeout(pollTimer))
 
 const { brand } = sessionStore()
 const destination = computed(() =>
@@ -85,19 +171,25 @@ const actionLabel = computed(() =>
 			: __('Start learning'),
 )
 const successEyebrow = computed(() =>
-	props.type === 'certificate' ? __('Payment complete') : __('Enrollment complete'),
+	props.type === 'certificate'
+		? __('Payment complete')
+		: __('Enrollment complete'),
 )
 const successTitle = computed(() =>
-	props.type === 'certificate' ? __('Certification unlocked') : __('You are all set'),
+	props.type === 'certificate'
+		? __('Certification unlocked')
+		: __('You are all set'),
 )
 const successMessage = computed(() =>
 	props.type === 'certificate'
 		? __('Your payment was confirmed and certification access is ready.')
-		: __('Your payment was confirmed and access has been added to your account.'),
+		: __(
+				'Your payment was confirmed and access has been added to your account.',
+			),
 )
 
 usePageMeta(() => ({
-	title: __('Payment successful'),
+	title: props.type == 'order' && orderStatus.data?.status != 'Paid' ? __('Checking payment') : __('Payment successful'),
 	icon: brand.favicon,
 }))
 </script>

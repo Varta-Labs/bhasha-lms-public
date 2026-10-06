@@ -95,8 +95,12 @@ import CourseCardOverlay from '@/components/CourseCardOverlay.vue'
 import CourseReviews from '@/components/CourseReviews.vue'
 import { getLmsRoute } from '@/utils/basePath'
 import type { CourseDetails, OutlineChapter, Resource } from '@/types/api'
+import { useCart } from '@/stores/cart'
+import { useRouter } from 'vue-router'
 
 const props = defineProps<{ course: Resource<CourseDetails | null> }>()
+const cart = useCart()
+const router = useRouter()
 const heroElement = ref<HTMLElement | null>(null)
 const enrollmentCard = ref<{ enrollStudent: () => void } | null>(null)
 const showFloatingAction = ref(false)
@@ -107,19 +111,19 @@ let heroVisible = true
 const outline = createResource({
 	url: 'lms.lms.utils.get_course_outline',
 	cache: ['product_course_outline', props.course.data?.name],
-	makeParams() { return { course: props.course.data?.name, progress: true } },
-	auto: true,
+	makeParams() { return { course: props.course.data?.name, progress: Boolean(props.course.data?.membership) } },
+	auto: false,
 	onSuccess(data: OutlineChapter[]) { if (data?.length && !expandedChapterNames.value.length) expandedChapterNames.value = [data[0].name] },
 }) as Resource<OutlineChapter[] | null>
 
-watch(() => props.course.data?.name, () => outline.reload())
+watch(() => props.course.data?.name, (name) => { if (name) outline.reload() }, { immediate: true })
 
 const numericRating = computed(() => { const value = Number.parseFloat(props.course.data?.rating || ''); return Number.isFinite(value) ? value : 0 })
 const ratingValue = computed(() => numericRating.value > 0 ? numericRating.value.toFixed(1) : '')
 const ratingCount = computed(() => props.course.data?.rating_count || 0)
 const roundedRating = computed(() => Math.round(numericRating.value))
-const isKannadaCourse = computed(() => `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('kannada'))
-const isHindiCourse = computed(() => `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('hindi'))
+const isKannadaCourse = computed(() => !props.course.data?.addon_for_course && `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('kannada'))
+const isHindiCourse = computed(() => !props.course.data?.addon_for_course && `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('hindi'))
 const courseLanguage = computed(() => isKannadaCourse.value ? 'Kannada' : isHindiCourse.value ? 'Hindi' : '')
 const isEverydayConversationCourse = computed(() => Boolean(courseLanguage.value))
 const heroTitle = computed(() => isEverydayConversationCourse.value
@@ -153,6 +157,7 @@ const courseStats = computed(() => {
 const allChaptersOpen = computed(() => Boolean(outline.data?.length) && expandedChapterNames.value.length === outline.data?.length)
 const primaryActionLabel = computed(() => {
 	if (props.course.data?.membership) return __('Continue Learning')
+	if (props.course.data?.paid_course) return __('Add to cart')
 	const price = props.course.data?.paid_course
 		? props.course.data.price || __('Paid course')
 		: __('Free')
@@ -162,9 +167,7 @@ const primaryActionHref = computed(() => {
 	if (props.course.data?.membership) {
 		return getLmsRoute(`courses/${props.course.data.name}/learn/${props.course.data.current_lesson || '1-1'}`)
 	}
-	return props.course.data?.paid_course
-		? getLmsRoute(`billing/course/${props.course.data.name}`)
-		: null
+	return null
 })
 const brandLogo = `${import.meta.env.BASE_URL}bhasha-logo-text-transparent.png`
 const githubIcon = `${import.meta.env.BASE_URL}github.svg`
@@ -175,7 +178,12 @@ function chapterDescription(index: number) { return `${__('Chapter')} ${index} Â
 function toggleAllChapters() { expandedChapterNames.value = allChaptersOpen.value ? [] : (outline.data || []).map((chapter) => chapter.name) }
 function syncChapter(event: Event, name: string) { const open = (event.currentTarget as HTMLDetailsElement).open; const names = new Set(expandedChapterNames.value); open ? names.add(name) : names.delete(name); expandedChapterNames.value = [...names] }
 function ratingPercent(star: number) { return ratingCount.value > 0 && star === roundedRating.value ? 100 : 0 }
-function enrollStudent() { enrollmentCard.value?.enrollStudent() }
+function enrollStudent() {
+	if (props.course.data?.paid_course && !props.course.data?.membership) {
+		cart.add(props.course.data.name)
+		router.push({ name: 'Cart' })
+	} else enrollmentCard.value?.enrollStudent()
+}
 
 watch(heroElement, (hero) => {
 	pageObserver?.disconnect()

@@ -51,6 +51,33 @@
 						variant="outline"
 						@input="markDirty()"
 					/>
+					<Link
+						v-model="doc.addon_for_course"
+						doctype="LMS Course"
+						:label="__('Add-ons for course')"
+						:filters="{
+							paid_course: 1,
+							addon_for_course: ['is', 'not set'],
+							category: doc.category,
+						}"
+						:placeholder="
+							__('Select the main video course (practice packs only)')
+						"
+						@update:modelValue="markDirty()"
+					/>
+					<FormControl
+						v-if="doc.addon_for_course"
+						v-model="doc.bundle_discount_percent"
+						type="number"
+						:label="__('Practice pack bundle discount (%)')"
+						@input="markDirty()"
+					/>
+					<p v-if="doc.addon_for_course" class="text-sm text-ink-gray-6">
+						{{
+							__('Applied when learners buy or already own the main course.')
+						}}
+					</p>
+
 					<div class="border-t -mx-5" />
 					<Switch
 						size="sm"
@@ -80,7 +107,7 @@
 						:label="__('Paid certificate')"
 						:description="
 							__(
-								'Sell an evaluator-graded certificate alongside this free course.'
+								'Sell an evaluator-graded certificate alongside this free course.',
 							)
 						"
 						@update:modelValue="setPaidCertificate"
@@ -152,7 +179,7 @@ const showMemberModal = ref<boolean>(false)
 const publishedOnLabel = computed<string>(() =>
 	doc.value?.published_on
 		? dayjs(doc.value.published_on).format('DD MMM YYYY')
-		: ''
+		: '',
 )
 
 const selfEnrollment = computed<boolean>({
@@ -186,7 +213,7 @@ const timezoneResource = createResource({
 }) as Resource<string[] | null>
 
 const timezoneOptions = computed<{ label: string; value: string }[]>(() =>
-	(timezoneResource.data || []).map((tz) => ({ label: tz, value: tz }))
+	(timezoneResource.data || []).map((tz) => ({ label: tz, value: tz })),
 )
 
 function openEvaluatorModal() {

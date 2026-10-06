@@ -140,7 +140,7 @@
    "fieldname": "payment_for_document_type",
    "fieldtype": "Select",
    "label": "Payment for Document Type",
-   "options": "\nLMS Course\nLMS Batch",
+   "options": "\nLMS Course\nLMS Batch\nLMS Course Order",
    "reqd": 1
   },
   {

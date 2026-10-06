@@ -35,6 +35,9 @@ class LMSEnrollment(Document):
 			frappe.throw(_("Student is already enrolled in this course."))
 
 	def validate_course_enrollment_eligibility(self):
+		from lms.lms.cart import has_course_order_payment
+		if has_course_order_payment(self.payment, self.member, self.course):
+			return
 		course_details = frappe.db.get_value(
 			"LMS Course",
 			self.course,
@@ -88,11 +91,11 @@ def is_admin():
 
 
 def update_program_progress(member):
-	programs = frappe.get_all("LMS Program Member", {"member": member}, ["parent", "name"])
+	programs = frappe.get_all("LMS Program Member", filters={"member": member}, fields=["parent", "name"])
 
 	for program in programs:
 		total_progress = 0
-		courses = frappe.get_all("LMS Program Course", {"parent": program.parent}, pluck="course")
+		courses = frappe.get_all("LMS Program Course", filters={"parent": program.parent}, pluck="course")
 		for course in courses:
 			progress = frappe.db.get_value("LMS Enrollment", {"course": course, "member": member}, "progress")
 			progress = progress or 0

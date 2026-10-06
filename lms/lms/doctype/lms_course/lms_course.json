@@ -44,6 +44,9 @@
   "column_break_sflq",
   "evaluator",
   "timezone",
+  "addon_section",
+  "addon_for_course",
+  "bundle_discount_percent",
   "tab_4_tab",
   "statistics_section",
   "enrollments",
@@ -364,6 +367,25 @@
    "fieldtype": "Code",
    "label": "Testimonials (JSON)",
    "options": "JSON"
+  },
+  {
+   "fieldname": "addon_section",
+   "fieldtype": "Section Break",
+   "label": "Add-on packaging"
+  },
+  {
+   "fieldname": "addon_for_course",
+   "fieldtype": "Link",
+   "options": "LMS Course",
+   "label": "Add-ons for course",
+   "description": "Set this on the language practice pack and select its main video course."
+  },
+  {
+   "fieldname": "bundle_discount_percent",
+   "fieldtype": "Percent",
+   "label": "Practice pack bundle discount (%)",
+   "depends_on": "addon_for_course",
+   "description": "Discount on this pack when buying or already owning its main course."
   }
  ],
  "is_published_field": "published",

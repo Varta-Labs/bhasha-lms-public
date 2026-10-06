@@ -31,6 +31,26 @@ class LMSCourse(Document):
 		self.validate_amount_and_currency()
 		self.image = validate_image(self.image)
 		self.validate_card_gradient()
+		self.validate_addon_packaging()
+
+	def validate_addon_packaging(self):
+		if not 0 <= flt(self.bundle_discount_percent) <= 100:
+			frappe.throw(_("Bundle discount must be between 0 and 100 percent."))
+		if not self.addon_for_course:
+			if self.bundle_discount_percent:
+				frappe.throw(_("Select a main course before setting a bundle discount."))
+			return
+		if self.addon_for_course == self.name:
+			frappe.throw(_("A course cannot be its own add-on."))
+		main = frappe.get_doc("LMS Course", self.addon_for_course)
+		if main.addon_for_course or not main.paid_course or not self.paid_course:
+			frappe.throw(_("Link a paid practice pack to a main paid course."))
+		if not self.category or self.category != main.category:
+			frappe.throw(_("The practice pack and main course must have the same language category."))
+		if frappe.db.exists("LMS Course", {"addon_for_course": main.name, "name": ["!=", self.name]}):
+			frappe.throw(_("This main course already has an add-ons course."))
+		if frappe.db.exists("LMS Course", {"category": self.category, "addon_for_course": ["is", "set"], "name": ["!=", self.name]}):
+			frappe.throw(_("This language already has an add-ons course."))
 
 	def validate_published(self):
 		if not self.published:

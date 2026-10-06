@@ -12,7 +12,7 @@
 							<s v-if="hasEarlyBirdOffer">₹4,999</s>
 							<span>{{ __('Lifetime access') }}</span>
 						</div>
-						<a :href="signupUrl" class="guest-course__primary-action">
+						<a :href="signupUrl" class="guest-course__primary-action" @click="selectCourse">
 							{{ enrollLabel }}
 						</a>
 					</div>
@@ -181,6 +181,7 @@
 		<a
 			v-if="showFloatingAction"
 			:href="signupUrl"
+			@click="selectCourse"
 			class="guest-course__floating-action"
 		>
 			{{ enrollLabel }}
@@ -206,8 +207,13 @@ import {
 import CourseOutline from '@/components/CourseOutline.vue'
 import { getLmsRoute, getSignupUrl } from '@/utils/basePath'
 import type { CourseDetails, OutlineChapter, Resource } from '@/types/api'
+import { useCart } from '@/stores/cart'
 
 const props = defineProps<{ course: Resource<CourseDetails | null> }>()
+const cart = useCart()
+function selectCourse() {
+	if (props.course.data?.paid_course) cart.add(props.course.data.name)
+}
 const heroElement = ref<HTMLElement | null>(null)
 const showFloatingAction = ref(false)
 let pageObserver: IntersectionObserver | null = null
@@ -315,7 +321,7 @@ const priceLabel = computed(() => {
 	return props.course.data.price || (props.course.data.course_price ? `₹${props.course.data.course_price}` : __('Paid course'))
 })
 
-const enrollLabel = computed(() => __('Sign up and Enroll'))
+const enrollLabel = computed(() => props.course.data?.paid_course ? __('Add to cart') : __('Sign up and Enroll'))
 
 const previewImage = computed(() =>
 	props.course.data?.image || `${import.meta.env.BASE_URL}kannada-course-hero-v1.png`,
@@ -332,7 +338,7 @@ const guidedLearningImage = `${import.meta.env.BASE_URL}course-marketing/guided-
 const confidenceImage = `${import.meta.env.BASE_URL}course-marketing/everyday-confidence.jpg`
 
 const signupUrl = computed(() =>
-	getSignupUrl(getLmsRoute(`billing/course/${props.course.data?.name || ''}`)),
+	props.course.data?.paid_course ? getLmsRoute('cart') : getSignupUrl(getLmsRoute(`courses/${props.course.data?.name || ''}`)),
 )
 
 const outcomes = computed<string[]>(() => {

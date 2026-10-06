@@ -1,0 +1,52 @@
+{
+ "doctype": "DocType",
+ "name": "LMS Course Order Item",
+ "module": "LMS",
+ "engine": "InnoDB",
+ "field_order": [
+  "course",
+  "title",
+  "original_amount",
+  "discount_amount",
+  "amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "course",
+   "fieldtype": "Link",
+   "label": "Course",
+   "options": "LMS Course",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "original_amount",
+   "fieldtype": "Currency",
+   "label": "Original amount"
+  },
+  {
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "label": "Discount"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "in_list_view": 1
+  }
+ ],
+ "permissions": [],
+ "istable": 1,
+ "autoname": "hash",
+ "track_changes": 0,
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

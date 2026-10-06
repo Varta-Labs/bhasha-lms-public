@@ -122,7 +122,7 @@
 		</LayoutHeader>
 
 		<div v-if="!isAdmin" class="flex-1 min-h-0">
-			<CourseMarketing v-if="!user.data" :course="course" />
+			<CourseMarketing v-if="!user.data && !course.data?.addon_for_course" :course="course" />
 			<CourseProductOverview v-else :course="course" />
 		</div>
 		<div

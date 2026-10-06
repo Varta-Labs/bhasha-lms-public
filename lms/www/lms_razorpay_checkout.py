@@ -48,5 +48,7 @@ def get_context(context):
 
 
 def get_billing_url(payment_details):
+	if payment_details.reference_doctype == "LMS Course Order":
+		return get_lms_route("billing/cart/current")
 	billing_type = "batch" if payment_details.reference_doctype == "LMS Batch" else "course"
 	return get_lms_route(f"billing/{billing_type}/{payment_details.reference_docname}")
