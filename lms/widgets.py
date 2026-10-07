@@ -19,6 +19,7 @@ MODULES = [
 ]
 
 BHASHA_FAVICON = "/assets/lms/frontend/favicon.png"
+BHASHA_LOGO = "/assets/lms/frontend/bhasha-logo-text-transparent.png"
 
 
 def update_website_context(context):
@@ -33,6 +34,11 @@ def update_website_context(context):
 	# The login success handler swaps the page for Frappe's default splash just
 	# before redirecting. Use the compact Bhasha mark for that transition too.
 	context.splash_image = BHASHA_FAVICON
+	if context.get("name") == "login":
+		# This hook runs after Frappe's login controller selects its defaults.
+		# Brand the actual HTML, including when styles have not loaded yet.
+		context.logo = BHASHA_LOGO
+		context.app_name = "Bhasha"
 
 
 class Widgets:

@@ -452,6 +452,7 @@ usePageMeta({ title: __('Your cart') })
 	color: #625d68;
 	font-size: 0.875rem;
 	line-height: 1.6;
+	overflow-wrap: anywhere;
 }
 .cart-item-price {
 	grid-column: 2;
@@ -615,9 +616,18 @@ usePageMeta({ title: __('Your cart') })
 		padding-inline: 0.85rem;
 	}
 	.cart-item {
-		grid-template-columns: 6.5rem minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr);
 		padding: 1.25rem;
-		gap: 0.75rem;
+		gap: 1rem;
+	}
+	.cart-thumbnail {
+		grid-row: auto;
+		width: 100%;
+	}
+	.cart-item-price {
+		grid-column: 1;
+		padding-top: 1rem;
+		border-top: 1px solid #ede9f2;
 	}
 	.cart-message,
 	.cart-suggestions,

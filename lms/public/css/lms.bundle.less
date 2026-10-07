@@ -1,2 +1,4 @@
 
-@import "./style.css";
+// Embed the CSS: a normal .css import survives Less compilation as a relative
+// browser URL, which points at the wrong directory in the hashed bundle.
+@import (inline) "./style.css";

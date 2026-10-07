@@ -24,7 +24,7 @@ def add_lms_student_role(doc, method):
 
 
 @frappe.whitelist(allow_guest=True)  # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method
-def sign_up(email: str, full_name: str, verify_terms: bool, user_category: str):
+def sign_up(email: str, full_name: str, verify_terms: bool, user_category: str, redirect_to: str = None):
 	if is_signup_disabled():
 		frappe.throw(_("Sign Up is disabled"), _("Not Allowed"))
 
@@ -70,6 +70,10 @@ def sign_up(email: str, full_name: str, verify_terms: bool, user_category: str):
 
 	user.add_roles("LMS Student")
 	set_country_from_ip(None, user.name)
+	if redirect_to:
+		from frappe.www.login import sanitize_redirect
+
+		frappe.cache.hset("redirect_after_login", user.name, sanitize_redirect(redirect_to))
 
 	if user.flags.email_sent:
 		return 1, _("Please check your email for verification")

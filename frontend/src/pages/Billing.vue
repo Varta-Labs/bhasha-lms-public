@@ -120,7 +120,22 @@
 						:key="item.course"
 						class="billing-summary-item"
 					>
-						<span class="billing-summary-item__title">{{ item.title }}</span>
+						<div
+							class="billing-summary-item__thumbnail"
+							:class="{ 'is-placeholder': !item.image }"
+						>
+							<img v-if="item.image" :src="item.image" alt="" loading="lazy" />
+							<BookOpen v-else class="size-6" aria-hidden="true" />
+						</div>
+						<div class="billing-summary-item__details">
+							<span class="billing-summary-item__title">{{ item.title }}</span>
+							<p
+								v-if="item.short_introduction"
+								class="billing-summary-item__intro"
+							>
+								{{ item.short_introduction }}
+							</p>
+						</div>
 						<strong class="billing-summary-item__price">{{
 							item.amount_formatted
 						}}</strong>
@@ -228,6 +243,7 @@ import NotPermitted from '@/components/NotPermitted.vue'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { getLmsRoute, getSignupUrl } from '@/utils/basePath'
 import {
+	BookOpen,
 	ChevronLeft,
 	LoaderCircle,
 	LockKeyhole,
@@ -669,12 +685,44 @@ usePageMeta(() => {
 
 .billing-summary-item {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	align-items: baseline;
-	gap: 1rem;
+	grid-template-columns: 5rem minmax(0, 1fr);
+	align-items: start;
+	gap: 0.5rem 0.85rem;
 	padding-block: 0.75rem;
 	font-size: 0.875rem;
 	line-height: 1.6;
+}
+
+.billing-summary-item__thumbnail {
+	grid-row: span 2;
+	overflow: hidden;
+	border-radius: 0.65rem;
+}
+
+.billing-summary-item__thumbnail img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.billing-summary-item__thumbnail.is-placeholder {
+	display: grid;
+	aspect-ratio: 16 / 9;
+	place-items: center;
+	background: #f0edff;
+	color: #6c5ce7;
+}
+
+.billing-summary-item__details {
+	min-width: 0;
+}
+
+.billing-summary-item__intro {
+	margin-top: 0.35rem;
+	color: #625d68;
+	font-size: 0.8125rem;
+	line-height: 1.5;
+	overflow-wrap: anywhere;
 }
 
 .billing-summary-item + .billing-summary-item {
@@ -683,15 +731,17 @@ usePageMeta(() => {
 
 .billing-summary-item__title {
 	min-width: 0;
-	color: #625d68;
+	color: #171717;
+	font-weight: 700;
 	overflow-wrap: anywhere;
 }
 
 .billing-summary-item__price {
+	grid-column: 2;
 	color: #383838;
 	font-weight: 700;
 	white-space: nowrap;
-	text-align: right;
+	text-align: left;
 }
 
 .billing-summary-lines {
@@ -791,6 +841,21 @@ usePageMeta(() => {
 
 	.billing-secure-pill {
 		padding-inline: 0.65rem;
+	}
+
+	.billing-summary-item {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0.85rem;
+		padding-block: 1rem;
+	}
+
+	.billing-summary-item__thumbnail {
+		grid-row: auto;
+		width: 100%;
+	}
+
+	.billing-summary-item__price {
+		grid-column: 1;
 	}
 }
 </style>
