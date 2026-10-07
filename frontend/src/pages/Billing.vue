@@ -685,16 +685,16 @@ usePageMeta(() => {
 
 .billing-summary-item {
 	display: grid;
-	grid-template-columns: 5rem minmax(0, 1fr);
+	grid-template-columns: minmax(0, 1fr);
 	align-items: start;
-	gap: 0.5rem 0.85rem;
-	padding-block: 0.75rem;
+	gap: 0.85rem;
+	padding-block: 1rem;
 	font-size: 0.875rem;
 	line-height: 1.6;
 }
 
 .billing-summary-item__thumbnail {
-	grid-row: span 2;
+	width: 100%;
 	overflow: hidden;
 	border-radius: 0.65rem;
 }
@@ -737,7 +737,7 @@ usePageMeta(() => {
 }
 
 .billing-summary-item__price {
-	grid-column: 2;
+	grid-column: 1;
 	color: #383838;
 	font-weight: 700;
 	white-space: nowrap;
@@ -841,21 +841,6 @@ usePageMeta(() => {
 
 	.billing-secure-pill {
 		padding-inline: 0.65rem;
-	}
-
-	.billing-summary-item {
-		grid-template-columns: minmax(0, 1fr);
-		gap: 0.85rem;
-		padding-block: 1rem;
-	}
-
-	.billing-summary-item__thumbnail {
-		grid-row: auto;
-		width: 100%;
-	}
-
-	.billing-summary-item__price {
-		grid-column: 1;
 	}
 }
 </style>

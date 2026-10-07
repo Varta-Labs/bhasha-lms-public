@@ -413,7 +413,7 @@ usePageMeta({ title: __('Your cart') })
 }
 .cart-item {
 	display: grid;
-	grid-template-columns: 10rem minmax(0, 1fr);
+	grid-template-columns: clamp(11rem, 34%, 14rem) minmax(0, 1fr);
 	gap: 1rem 1.25rem;
 	padding: 1.5rem;
 }
