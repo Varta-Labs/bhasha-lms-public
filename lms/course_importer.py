@@ -55,6 +55,8 @@ def _validate_course_package(package: dict) -> None:
 		if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", str(course[fieldname])):
 			raise ValueError(f"Course {fieldname} must be a lowercase slug.")
 	settings = course.get("lmsSettings") or {}
+	if settings.get("paidCourse") and settings.get("coursePrice") is None:
+		raise ValueError("Paid course package must configure coursePrice before importing.")
 	if not settings.get("introVideoUrl") and not settings.get("useFirstLessonVideoAsIntro"):
 		raise ValueError("Course package must configure an intro video or first-lesson fallback.")
 
@@ -73,8 +75,10 @@ def _validate_course_package(package: dict) -> None:
 				raise ValueError(f"Lesson IDs must be present and unique; received {lesson_id!r}.")
 			lesson_ids.add(lesson_id)
 			content_types = {item.get("type") for item in lesson.get("content", [])}
-			if not {"video", "slides"}.issubset(content_types):
-				raise ValueError(f"Lesson {lesson_id!r} must contain video and slides content.")
+			required_content = {"video", "slides"} if settings.get("slidesRequired", True) else {"video"}
+			if not required_content.issubset(content_types):
+				requirement = "video and slides" if settings.get("slidesRequired", True) else "video"
+				raise ValueError(f"Lesson {lesson_id!r} must contain {requirement} content.")
 
 
 def _vimeo_referer(public_url: str) -> str:
@@ -189,6 +193,8 @@ def _course_values(course_definition: dict) -> dict:
 		"category": settings.get("category"),
 		"paid_course": cint(settings.get("paidCourse", False)),
 		"course_price": settings.get("coursePrice", 0),
+		"addon_for_course": settings.get("addonForCourse"),
+		"bundle_discount_percent": settings.get("bundleDiscountPercent", 0),
 		"currency": settings.get("currency"),
 		"amount_usd": settings.get("amountUsd"),
 		"upcoming": cint(settings.get("upcoming", False)),
@@ -306,13 +312,10 @@ def _video_embed_url(video: dict) -> str:
 
 def _lesson_content(lesson_definition: dict) -> dict:
 	video = next(item for item in lesson_definition["content"] if item["type"] == "video")
-	slides = next(item for item in lesson_definition["content"] if item["type"] == "slides")
+	slides = next((item for item in lesson_definition["content"] if item["type"] == "slides"), None)
 	title = html.escape(str(lesson_definition["title"]))
 	description = html.escape(str(lesson_definition.get("description") or ""))
 	video_description = html.escape(str(video.get("description") or ""))
-	slides_description = html.escape(str(slides.get("description") or ""))
-	slides_url = str(slides["url"])
-	slides_embed = f"https://docs.google.com/presentation/d/{slides['presentationId']}/embed"
 	duration = cint(lesson_definition.get("estimatedDurationMinutes"))
 
 	blocks = [
@@ -341,6 +344,13 @@ def _lesson_content(lesson_definition: dict) -> dict:
 					"caption": video.get("title") or lesson_definition["title"],
 				},
 			},
+		]
+	)
+	if slides:
+		slides_description = html.escape(str(slides.get("description") or ""))
+		slides_url = str(slides["url"])
+		slides_embed = f"https://docs.google.com/presentation/d/{slides['presentationId']}/embed"
+		blocks.extend([
 			{"type": "header", "data": {"text": "Lesson presentation", "level": 3}},
 			{"type": "paragraph", "data": {"text": slides_description}},
 			{
@@ -354,8 +364,7 @@ def _lesson_content(lesson_definition: dict) -> dict:
 					"caption": slides.get("title") or lesson_definition["title"],
 				},
 			},
-		]
-	)
+		])
 	return {"time": 0, "blocks": blocks, "version": EDITORJS_VERSION}
 
 
