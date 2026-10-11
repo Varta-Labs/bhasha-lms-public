@@ -253,7 +253,9 @@ def _get_or_create_course(course_definition: dict, publish: int | None):
 		values["published"] = cint(settings.get("publishedOnCreate", False))
 	course.update(values)
 	if created:
-		course.insert(ignore_permissions=True)
+		# Frappe resets a manually assigned name before running autoname.
+		# Use its explicit naming override to keep the package's stable route.
+		course.insert(ignore_permissions=True, set_name=stable_name)
 	else:
 		course.save(ignore_permissions=True)
 	return course, created
