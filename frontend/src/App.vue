@@ -1,7 +1,8 @@
 <template>
 	<FrappeUIProvider>
 		<Layout class="isolate text-p-base">
-			<router-view />
+			<!-- Recreate course resources when the course changes, retaining lesson navigation within a course. -->
+			<router-view :key="['CourseDetail', 'Lesson'].includes(router.currentRoute.value.name) ? router.currentRoute.value.params.courseName : undefined" />
 		</Layout>
 		<InstallPrompt v-if="isMobile && !settings.data?.disable_pwa" />
 		<Dialogs />

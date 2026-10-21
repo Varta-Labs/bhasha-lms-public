@@ -75,8 +75,8 @@
 			<div class="guest-course__shell guest-course__story-grid guest-course__story-grid--reverse">
 				<div>
 					<span class="guest-course__kicker">{{ __('How you learn') }}</span>
-					<h2>{{ __('Learn with a trainer—and a learner just like you.') }}</h2>
-					<p class="guest-course__story-lead">{{ __('This is more than a regular recorded lesson. You watch a trainer actively teach an adult beginner, then practise alongside them as the conversation develops.') }}</p>
+					<h2>{{ isAddon ? __('Watch, review, and practise at your own pace.') : __('Learn with a trainer—and a learner just like you.') }}</h2>
+					<p class="guest-course__story-lead">{{ isAddon ? __('Build your phrase and vocabulary skills with short videos, then practise verb sentences with the reference materials and workbook in your pack.') : __('This is more than a regular recorded lesson. You watch a trainer actively teach an adult beginner, then practise alongside them as the conversation develops.') }}</p>
 					<ol class="guest-course__method-steps">
 						<li v-for="(step, index) in methodSteps" :key="step.title">
 							<span>{{ index + 1 }}</span>
@@ -190,8 +190,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { createResource } from 'frappe-ui'
+import { computed, inject, onBeforeUnmount, ref, watch } from 'vue'
+import { createResource, toast } from 'frappe-ui'
 import {
 	Award,
 	BookOpen,
@@ -211,8 +211,22 @@ import { useCart } from '@/stores/cart'
 
 const props = defineProps<{ course: Resource<CourseDetails | null> }>()
 const cart = useCart()
-function selectCourse() {
+const isAddon = computed(() => Boolean(props.course.data?.addon_for_course))
+const user = inject<Resource<{ name: string } | null>>('$user')
+const enrollment = createResource({
+	url: 'frappe.client.insert',
+	makeParams() {
+		return { doc: { doctype: 'LMS Enrollment', course: props.course.data?.name, member: user?.data?.name } }
+	},
+	onSuccess() { props.course.reload() },
+	onError(error: { messages?: string[]; message?: string }) { toast.error(error.messages?.[0] || error.message || __('Unable to enroll. Please try again.')) },
+})
+function selectCourse(event: MouseEvent) {
 	if (props.course.data?.paid_course) cart.add(props.course.data.name)
+	else if (user?.data) {
+		event.preventDefault()
+		if (!enrollment.loading) enrollment.submit()
+	}
 }
 const heroElement = ref<HTMLElement | null>(null)
 const showFloatingAction = ref(false)
@@ -236,11 +250,11 @@ watch(
 )
 
 const isKannadaCourse = computed(() =>
-	`${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('kannada'),
+	!isAddon.value && `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('kannada'),
 )
 
 const isHindiCourse = computed(() =>
-	`${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('hindi'),
+	!isAddon.value && `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('hindi'),
 )
 
 const hasEarlyBirdOffer = computed(() =>
@@ -321,7 +335,7 @@ const priceLabel = computed(() => {
 	return props.course.data.price || (props.course.data.course_price ? `₹${props.course.data.course_price}` : __('Paid course'))
 })
 
-const enrollLabel = computed(() => props.course.data?.paid_course ? __('Add to cart') : __('Sign up and Enroll'))
+const enrollLabel = computed(() => props.course.data?.paid_course ? __('Add to cart') : user?.data ? __('Enroll for free') : __('Sign up and Enroll'))
 
 const previewImage = computed(() =>
 	props.course.data?.image || `${import.meta.env.BASE_URL}kannada-course-hero-v1.png`,
@@ -390,7 +404,11 @@ const storyPoints = [
 	{ title: __('Show respect'), copy: __('Connect with the language, culture, and people around you.') },
 ]
 
-const methodSteps = computed(() => [
+const methodSteps = computed(() => isAddon.value ? [
+	{ title: __('Watch and repeat'), copy: __('Practise everyday phrases and vocabulary with short videos.') },
+	{ title: __('Review verb forms'), copy: __('Return to the reference materials whenever you need a refresher.') },
+	{ title: __('Put it into practice'), copy: __('Complete the workbook exercises online or download the PDF to practise on paper.') },
+] : [
 	{ title: __('Watch the trainer teach'), copy: __('New {0} words and phrases are introduced in context.').format(courseLanguage.value) },
 	{ title: __('Practise with the learner'), copy: __('Pause, repeat aloud, and learn as the learner improves.') },
 	{ title: __('Understand how it is used'), copy: __('Hear pronunciation corrections, usage notes, and conversations built step by step.') },
@@ -424,7 +442,12 @@ const defaultFaqs = computed(() => [
 ])
 
 const faqs = computed(() =>
-	props.course.data?.faqs?.length ? props.course.data.faqs : defaultFaqs.value,
+	props.course.data?.faqs?.length ? props.course.data.faqs : isAddon.value ? [
+		{ question: __('What is included in this pack?'), answer: props.course.data?.short_introduction || '' },
+		{ question: __('Do I need to buy the video course first?'), answer: __('You can buy the pack on its own. A bundle discount applies when you buy it with the matching video course or already own that course.') },
+		{ question: __('Can I use the workbook on my phone?'), answer: __('Yes. Read it in the lesson viewer, turn pages, zoom in, or download the PDF for printing and offline practice.') },
+		{ question: __('How do I get access?'), answer: __('Add the pack to your cart and complete payment. Your account will then have access to all pack chapters.') },
+	] : defaultFaqs.value,
 )
 
 function initials(name: string) {

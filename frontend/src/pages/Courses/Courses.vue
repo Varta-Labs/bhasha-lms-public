@@ -237,7 +237,6 @@ const setFiltersFromQuery = () => {
 const courses = createListResource({
 	doctype: 'LMS Course',
 	url: 'lms.lms.utils.get_courses',
-	cache: ['courses', user.data?.name],
 	pageLength: pageLength.value,
 	start: start.value,
 })

@@ -1,0 +1,106 @@
+.bhasha-practice-markdown {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+.bhasha-practice-markdown p {
+  margin: 0 0 1rem;
+}
+.bhasha-practice-markdown h2 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.bhasha-practice-table {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e1dff0;
+  border-radius: 0.75rem;
+}
+.bhasha-practice-table:focus-visible {
+  outline: 2px solid #6c5ce7;
+  outline-offset: 2px;
+}
+.bhasha-practice-table-hint {
+  display: none;
+}
+@media (max-width: 767px) {
+  .bhasha-practice-table-hint {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #625b76;
+    font-size: 0.8rem;
+  }
+}
+.bhasha-practice-table table {
+  width: 100%;
+  min-width: 30rem;
+  margin: 0;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: 0.95rem;
+}
+.bhasha-practice-table th,
+.bhasha-practice-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid #eceaf4;
+  text-align: left;
+  vertical-align: top;
+}
+.bhasha-practice-table th {
+  background: #f1edff;
+  color: #47349b;
+  font-weight: 700;
+}
+.bhasha-practice-table tr:nth-child(even) {
+  background: #faf9fe;
+}
+.bhasha-practice-table tr:last-child td {
+  border-bottom: 0;
+}
+.bhasha-practice-markdown-input {
+  width: 100%;
+  min-height: 30rem;
+  font-family: monospace;
+}
+.bhasha-slide-deck.is-workbook .bhasha-slide-deck__stage {
+  display: block;
+  overflow: auto;
+  max-height: 75vh;
+  overscroll-behavior: contain;
+}
+.bhasha-slide-deck.is-workbook .bhasha-slide-deck__canvas {
+  max-width: none;
+  margin: auto;
+}
+.bhasha-slide-deck.is-workbook .bhasha-slide-deck__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.bhasha-workbook-page {
+  width: 3.5rem;
+  min-height: 2.5rem;
+  margin-inline: 0.3rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+.bhasha-workbook-zoom {
+  min-height: 2.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+}
+.bhasha-workbook-download {
+  padding: 0.5rem;
+  color: #5841b6;
+  font-size: 0.85rem;
+  text-decoration: underline;
+}
+.bhasha-slide-deck.is-workbook:fullscreen .bhasha-slide-deck__stage,
+.bhasha-slide-deck.is-workbook.is-fullscreen-fallback
+  .bhasha-slide-deck__stage {
+  max-height: none;
+}

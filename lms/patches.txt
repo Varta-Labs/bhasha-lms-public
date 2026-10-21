@@ -130,3 +130,4 @@ lms.patches.v2_0.rebrand_demo_content #11-07-2026
 lms.patches.v2_0.set_course_thumbnails
 lms.patches.v2_0.set_hindi_intro_video
 lms.patches.v2_0.update_catalog_offer_and_tamil_media
+lms.patches.v2_0.update_addon_offer_and_video_certificates

@@ -161,11 +161,6 @@ const emit = defineEmits(['select-lesson', 'outline-meta'])
 
 const outline = createResource({
 	url: 'lms.lms.utils.get_course_outline',
-	cache: [
-		'course_outline_student',
-		props.courseName,
-		props.withProgress ? 'progress' : 'no-progress',
-	],
 	makeParams() {
 		return {
 			course: props.courseName,

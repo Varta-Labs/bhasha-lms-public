@@ -4,9 +4,9 @@
 		:class="{ 'is-admin': isAdmin }"
 	>
 		<LayoutHeader
-			v-if="!user.data || isAdmin || isMobile"
+			v-if="!course.data?.membership || isAdmin || isMobile"
 			:isLoading="!course.data"
-			:variant="user.data ? 'product' : 'marketing'"
+			:variant="course.data?.membership || isAdmin ? 'product' : 'marketing'"
 		>
 			<template #left-header>
 				<router-link
@@ -121,12 +121,12 @@
 			</template>
 		</LayoutHeader>
 
-		<div v-if="!isAdmin" class="flex-1 min-h-0">
-			<CourseMarketing v-if="!user.data && !course.data?.addon_for_course" :course="course" />
+		<div v-if="!isAdmin && course.data" class="flex-1 min-h-0">
+			<CourseMarketing v-if="!course.data.membership" :course="course" />
 			<CourseProductOverview v-else :course="course" />
 		</div>
 		<div
-			v-else
+			v-else-if="isAdmin && course.data"
 			class="course-admin-workspace relative flex flex-1 min-h-0 flex-col"
 		>
 			<Tabs class="bhasha-secondary-tabs" :tabs="tabs" v-model="tabIndex">
@@ -331,7 +331,6 @@ watch(() => route.hash, updateTabIndex)
 
 const course = createResource({
 	url: 'lms.lms.utils.get_course_details',
-	cache: ['course', props.courseName],
 	makeParams() {
 		return {
 			course: props.courseName,
@@ -374,8 +373,8 @@ watch(
 	},
 )
 
-watch(course, () => {
-	if (!isAdmin.value && !course.data?.published && !course.data?.upcoming) {
+watch(() => course.data, (data) => {
+	if (data && !isAdmin.value && !data.published && !data.upcoming && !data.membership) {
 		router.push({
 			name: 'Courses',
 		})
@@ -384,7 +383,7 @@ watch(course, () => {
 
 const isInstructor = (): boolean => {
 	let user_is_instructor = false
-	course.data?.instructors.forEach((instructor: CourseInstructorInfo) => {
+	course.data?.instructors?.forEach((instructor: CourseInstructorInfo) => {
 		if (!user_is_instructor && instructor.name == user.data?.name) {
 			user_is_instructor = true
 		}

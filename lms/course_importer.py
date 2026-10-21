@@ -15,6 +15,7 @@ from urllib.request import Request, urlopen
 
 import frappe
 from frappe.utils import cint
+from lms.workbooks import workbook_path as _workbook_path
 
 
 KANNADA_COURSE_DATA_FILE = "kannada-for-everyday-conversations.json"
@@ -75,6 +76,19 @@ def _validate_course_package(package: dict) -> None:
 				raise ValueError(f"Lesson IDs must be present and unique; received {lesson_id!r}.")
 			lesson_ids.add(lesson_id)
 			content_types = {item.get("type") for item in lesson.get("content", [])}
+			if content_types & {"markdown", "pdf"}:
+				if (
+					not settings.get("allowPracticeMaterials")
+					or len(lesson.get("content", [])) != 1
+					or content_types not in ({"markdown"}, {"pdf"})
+				):
+					raise ValueError(f"Lesson {lesson_id!r} must contain exactly one enabled practice material.")
+				item = lesson["content"][0]
+				if item["type"] == "markdown" and not str(item.get("text") or "").strip():
+					raise ValueError(f"Lesson {lesson_id!r} has empty Markdown.")
+				if item["type"] == "pdf":
+					_workbook_path(item.get("filename"))
+				continue
 			required_content = {"video", "slides"} if settings.get("slidesRequired", True) else {"video"}
 			if not required_content.issubset(content_types):
 				requirement = "video and slides" if settings.get("slidesRequired", True) else "video"
@@ -313,6 +327,18 @@ def _video_embed_url(video: dict) -> str:
 
 
 def _lesson_content(lesson_definition: dict) -> dict:
+	practice = next(
+		(item for item in lesson_definition["content"] if item["type"] in {"markdown", "pdf"}), None
+	)
+	if practice:
+		if practice["type"] == "markdown":
+			blocks = [{"type": "lessonMarkdown", "data": {"text": practice["text"]}}]
+		else:
+			blocks = [{
+				"type": "workbook",
+				"data": {"filename": practice["filename"], "caption": lesson_definition["title"]},
+			}]
+		return {"time": 0, "blocks": blocks, "version": EDITORJS_VERSION}
 	video = next(item for item in lesson_definition["content"] if item["type"] == "video")
 	slides = next((item for item in lesson_definition["content"] if item["type"] == "slides"), None)
 	title = html.escape(str(lesson_definition["title"]))
@@ -478,18 +504,18 @@ def _sync_curriculum(course, course_definition: dict) -> dict:
 	created_lessons = []
 	active_lesson_names = set()
 
-	for module_index, module in enumerate(course_definition["modules"]):
+	for module in course_definition["modules"]:
 		chapter, chapter_created = _get_or_create_chapter(course, module)
 		if chapter_created:
 			created_chapters.append(chapter.name)
 
 		lesson_docs = []
-		for lesson_index, lesson_definition in enumerate(module["chapters"]):
+		for lesson_definition in module["chapters"]:
 			lesson, lesson_created = _get_or_create_lesson(
 				course,
 				chapter,
 				lesson_definition,
-				include_in_preview=module_index == 0 and lesson_index == 0,
+				include_in_preview=False,
 			)
 			lesson_docs.append(lesson)
 			active_lesson_names.add(lesson.name)
@@ -562,6 +588,30 @@ def import_course(
 		"public_url": _vimeo_referer(public_url).rstrip("/"),
 		**result,
 	}
+
+
+def import_addon_courses(
+	publish: int | None = None,
+	validate_remote: int = 1,
+	public_url: str = DEFAULT_PUBLIC_URL,
+) -> list[dict]:
+	"""Import all six packs after their matching video courses exist."""
+	frappe.only_for(("System Manager", "Moderator"))
+	languages = ("kannada", "hindi", "tamil", "telugu", "malayalam", "marathi")
+	missing = [
+		f"{language}-for-everyday-conversations"
+		for language in languages
+		if not frappe.db.exists("LMS Course", f"{language}-for-everyday-conversations")
+	]
+	if missing:
+		raise ValueError(f"Import the matching video courses first: {', '.join(missing)}")
+	return [
+		import_course(
+			f"{language}-addons.json", publish=publish,
+			validate_remote=validate_remote, public_url=public_url,
+		)
+		for language in languages
+	]
 
 
 def import_kannada_video_course(

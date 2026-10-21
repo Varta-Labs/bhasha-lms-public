@@ -784,12 +784,14 @@ def get_courses(filters: dict = None, start: int = 0) -> list:
 		filters=filters,
 		fields=fields,
 		or_filters=or_filters,
-		order_by="enrollments desc",
+		order_by="addon_for_course asc, enrollments desc, title asc",
 		start=start,
 		page_length=30,
 	)
 	if show_featured and start == 0:
 		courses = get_featured_courses(filters, or_filters, fields) + courses
+	# Featured packs still follow the main courses in this catalog page.
+	courses.sort(key=lambda course: bool(course.addon_for_course))
 
 	courses = get_enrollment_details(courses)
 	courses = get_course_card_details(courses)
@@ -1213,26 +1215,30 @@ def get_lesson(course: str, chapter: int, lesson: int) -> dict:
 	if not lesson_details:
 		return {}
 
-	if lesson_details.is_scorm_package:
-		return {
-			"is_scorm_package": True,
-			"chapter_name": chapter_name,
-		}
-
 	membership = get_membership(course)
 	course_info = frappe.db.get_value(
 		"LMS Course",
 		course,
-		["title", "paid_certificate", "disable_self_learning"],
+		["title", "paid_certificate", "paid_course", "disable_self_learning"],
 		as_dict=1,
 	)
 
-	if not lesson_details.include_in_preview and not membership and not can_modify_course(course):
+	if (
+		(course_info.paid_course or not lesson_details.include_in_preview)
+		and not membership
+		and not can_modify_course(course)
+	):
 		return {
 			"no_preview": 1,
 			"title": lesson_details.title,
 			"course_title": course_info.title,
 			"disable_self_learning": course_info.disable_self_learning,
+		}
+
+	if lesson_details.is_scorm_package:
+		return {
+			"is_scorm_package": True,
+			"chapter_name": chapter_name,
 		}
 
 	if frappe.session.user == "Guest":
@@ -1277,6 +1283,16 @@ def prepare_slide_decks(content: str, course: str, chapter: int, lesson: int) ->
 
 	changed = False
 	for block_index, block in enumerate(blocks):
+		if block.get("type") == "workbook":
+			query = urlencode({"course": course, "chapter": chapter, "lesson": lesson, "block": block_index})
+			block["type"] = "slideDeck"
+			block["data"] = {
+				"url": f"/api/method/lms.workbooks.get_lesson_workbook?{query}",
+				"caption": (block.get("data") or {}).get("caption"),
+				"kind": "workbook",
+			}
+			changed = True
+			continue
 		if not _is_google_slide_block(block):
 			continue
 		data = block.get("data") or {}

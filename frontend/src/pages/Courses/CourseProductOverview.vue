@@ -110,7 +110,6 @@ let heroVisible = true
 
 const outline = createResource({
 	url: 'lms.lms.utils.get_course_outline',
-	cache: ['product_course_outline', props.course.data?.name],
 	makeParams() { return { course: props.course.data?.name, progress: Boolean(props.course.data?.membership) } },
 	auto: false,
 	onSuccess(data: OutlineChapter[]) { if (data?.length && !expandedChapterNames.value.length) expandedChapterNames.value = [data[0].name] },

@@ -6,6 +6,7 @@ import { Program } from '@/utils/program'
 import { Assignment } from '@/utils/assignment'
 import { Upload } from '@/utils/upload'
 import { Markdown } from '@/utils/markdownParser'
+import LessonMarkdown, { BundledWorkbook } from '@/utils/lessonMarkdown'
 import { useSettings } from '@/stores/settings'
 import { usersStore } from '@/stores/user'
 import Header from '@editorjs/header'
@@ -145,6 +146,8 @@ export function getEditorTools() {
 			class: Markdown,
 			inlineToolbar: true,
 		},
+		lessonMarkdown: LessonMarkdown,
+		workbook: BundledWorkbook,
 		image: SimpleImage,
 		paragraph: {
 			class: Paragraph,

@@ -34,19 +34,22 @@ export default class SlideDeck {
 		this.pageNumber = 1
 		this.renderToken = 0
 		this.fullscreenFallback = false
+		this.isWorkbook = this.data.kind === 'workbook'
+		this.zoom = 1
 	}
 
 	render() {
 		this.root = document.createElement('section')
 		this.root.className = 'bhasha-slide-deck'
-		this.root.setAttribute('aria-label', 'Lesson presentation')
+		this.root.classList.toggle('is-workbook', this.isWorkbook)
+		this.root.setAttribute('aria-label', this.isWorkbook ? 'Practice workbook' : 'Lesson presentation')
 
 		this.stage = document.createElement('div')
 		this.stage.className = 'bhasha-slide-deck__stage is-loading'
 		this.status = document.createElement('span')
 		this.status.className = 'bhasha-slide-deck__status'
 		this.status.setAttribute('aria-live', 'polite')
-		this.status.textContent = 'Loading presentation…'
+		this.status.textContent = this.isWorkbook ? 'Loading workbook…' : 'Loading presentation…'
 		this.stage.append(this.status)
 
 		this.canvas = document.createElement('canvas')
@@ -73,7 +76,41 @@ export default class SlideDeck {
 			this.fullscreenButton,
 			this.nextButton,
 		)
+		if (this.isWorkbook) {
+			this.previousButton.setAttribute('aria-label', 'Previous page')
+			this.nextButton.setAttribute('aria-label', 'Next page')
+			this.pageInput = document.createElement('input')
+			this.pageInput.type = 'number'
+			this.pageInput.min = '1'
+			this.pageInput.value = '1'
+			this.pageInput.className = 'bhasha-workbook-page'
+			this.pageInput.setAttribute('aria-label', 'Go to page')
+			this.pageInput.addEventListener('change', () => {
+				const page = Number(this.pageInput.value)
+				if (Number.isInteger(page)) this.changePage(page - this.pageNumber)
+				this.pageInput.value = String(this.pageNumber)
+			})
+			this.zoomSelect = document.createElement('select')
+			this.zoomSelect.className = 'bhasha-workbook-zoom'
+			this.zoomSelect.setAttribute('aria-label', 'Workbook zoom')
+			for (const [value, label] of [[1, 'Fit width'], [1.5, '150%'], [2, '200%'], [3, '300%']]) {
+				this.zoomSelect.add(new Option(label, String(value)))
+			}
+			this.zoomSelect.addEventListener('change', () => {
+				this.zoom = Number(this.zoomSelect.value)
+				this.renderPage()
+			})
+			const download = document.createElement('a')
+			download.href = this.data.url
+			download.download = 'practice-workbook.pdf'
+			download.className = 'bhasha-workbook-download'
+			download.textContent = 'Download PDF'
+			controls.insertBefore(this.pageInput, this.pageStatus)
+			controls.append(this.zoomSelect, download)
+		}
 		this.root.append(this.stage, controls)
+		this.previousButton.disabled = true
+		this.nextButton.disabled = true
 
 		this.resizeObserver = new ResizeObserver(() => {
 			if (!this.pdf || !this.stage.clientWidth) return
@@ -105,7 +142,7 @@ export default class SlideDeck {
 		} catch (error) {
 			console.error('Presentation failed to load:', error?.message, error)
 			this.stage.classList.remove('is-loading')
-			this.status.textContent = 'Presentation unavailable. Please try again.'
+			this.status.textContent = this.isWorkbook ? 'Workbook unavailable. Please try again.' : 'Presentation unavailable. Please try again.'
 			this.stage.replaceChildren(this.status)
 		}
 	}
@@ -122,7 +159,7 @@ export default class SlideDeck {
 		const heightScale = isFullscreen
 			? this.stage.clientHeight / initialViewport.height
 			: widthScale
-		const cssScale = Math.min(widthScale, heightScale)
+		const cssScale = Math.min(widthScale, heightScale) * this.zoom
 		const cssWidth = initialViewport.width * cssScale
 		const pixelRatio = Math.min(window.devicePixelRatio || 1, 2)
 		const viewport = page.getViewport({ scale: cssScale * pixelRatio })
@@ -156,6 +193,10 @@ export default class SlideDeck {
 		this.previousButton.disabled = this.pageNumber <= 1
 		this.nextButton.disabled = this.pageNumber >= this.pdf.numPages
 		this.pageStatus.textContent = `${this.pageNumber} / ${this.pdf.numPages}`
+		if (this.pageInput) {
+			this.pageInput.value = String(this.pageNumber)
+			this.pageInput.max = String(this.pdf.numPages)
+		}
 	}
 
 	async toggleFullscreen() {

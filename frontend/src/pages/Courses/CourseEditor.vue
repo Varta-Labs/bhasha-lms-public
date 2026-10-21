@@ -172,7 +172,6 @@ function onSelectLesson({ chapterNumber, lessonNumber }) {
 
 const outline = createResource({
 	url: 'lms.lms.utils.get_course_outline',
-	cache: ['course_outline', props.course?.data?.name],
 	makeParams() {
 		return {
 			course: props.course?.data?.name,

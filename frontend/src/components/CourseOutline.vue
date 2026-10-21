@@ -246,7 +246,6 @@ defineExpose({ openChapterModal })
 
 const outline = createResource({
 	url: 'lms.lms.utils.get_course_outline',
-	cache: ['course_outline', props.courseName],
 	makeParams() {
 		return { course: props.courseName, progress: props.getProgress }
 	},
