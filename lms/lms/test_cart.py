@@ -47,6 +47,9 @@ class TestCart(BaseTestUtils):
 		gateway = patch("lms.lms.cart.fetch_razorpay_resource", return_value={"items": []})
 		self.gateway_payments = gateway.start()
 		self.addCleanup(gateway.stop)
+		capture = patch("lms.lms.cart.capture_razorpay_payment")
+		self.gateway_capture = capture.start()
+		self.addCleanup(capture.stop)
 
 	def tearDown(self):
 		frappe.flags.data = None
@@ -167,16 +170,17 @@ class TestCart(BaseTestUtils):
 		self.assertEqual(frappe.db.count("LMS Enrollment", {"payment": order.payment}), 2)
 		self.gateway_payments.assert_called_once_with(f"orders/{payment.order_id}/payments")
 
-	def test_status_waits_for_capture_then_recovers_the_order(self):
+	def test_status_captures_authorized_payment_before_enrolling(self):
 		order = self.checkout()
 		payment = frappe.get_doc("LMS Payment", order.payment)
 		entity = {"id": "pay_delayed", "order_id": payment.order_id,
 			"status": "authorized", "amount": int(round(order.total_amount * 100)), "currency": order.currency}
 		self.gateway_payments.return_value = {"items": [entity]}
-		self.assertEqual(get_order_status(order.name)["status"], "Pending")
 		self.assertFalse(frappe.db.exists("LMS Enrollment", {"payment": order.payment}))
-		entity["status"] = "captured"
+		self.gateway_capture.return_value = {**entity, "status": "captured"}
 		self.assertEqual(get_order_status(order.name)["status"], "Paid")
+		self.gateway_capture.assert_called_once_with("pay_delayed", int(round(order.total_amount * 100)), order.currency)
+		self.assertEqual(frappe.db.count("LMS Enrollment", {"payment": order.payment}), 2)
 
 	def test_status_rejects_mismatched_captured_payment(self):
 		order = self.checkout()

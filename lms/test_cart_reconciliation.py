@@ -8,6 +8,8 @@ from decimal import Decimal
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+from requests.exceptions import HTTPError
+
 
 class TestCartReconciliation(unittest.TestCase):
 	def setUp(self):
@@ -41,6 +43,7 @@ class TestCartReconciliation(unittest.TestCase):
 		self.payment = types.SimpleNamespace(name="local-payment", order_id="order_saved")
 		frappe.get_doc.side_effect = lambda doctype, name: self.order if doctype == "LMS Course Order" else self.payment
 		self.cart.fetch_razorpay_resource = Mock(return_value={"items": []})
+		self.cart.capture_razorpay_payment = Mock(return_value=self.entity())
 		self.cart.fulfill_order = Mock(side_effect=lambda *args: setattr(self.order, "status", "Paid"))
 
 	@staticmethod
@@ -61,16 +64,62 @@ class TestCartReconciliation(unittest.TestCase):
 
 	def test_next_check_recovers_a_delayed_capture(self):
 		self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity(status="authorized")]}
+		self.cart.capture_razorpay_payment.return_value = self.entity(status="authorized")
 		self.assertEqual(self.cart.get_order_status(self.order.name)["status"], "Pending")
 		self.cart.fulfill_order.assert_not_called()
 		self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity()]}
 		self.assertEqual(self.cart.get_order_status(self.order.name)["status"], "Paid")
 
-	def test_empty_failed_and_authorized_attempts_do_not_unlock_access(self):
-		for entities in ([], [self.entity(status="failed")], [self.entity(status="authorized")]):
+	def test_empty_failed_created_and_refunded_attempts_do_not_unlock_access(self):
+		for entities in ([], [self.entity(status="failed")], [self.entity(status="created")], [self.entity(status="refunded")]):
 			with self.subTest(entities=entities):
 				self.cart.fetch_razorpay_resource.return_value = {"items": entities}
 				self.assertEqual(self.cart.get_order_status(self.order.name)["status"], "Pending")
+		self.cart.fulfill_order.assert_not_called()
+		self.cart.capture_razorpay_payment.assert_not_called()
+
+	def test_authorized_payment_is_captured_before_fulfillment(self):
+		self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity(status="authorized")]}
+		self.assertEqual(self.cart.get_order_status(self.order.name)["status"], "Paid")
+		self.cart.capture_razorpay_payment.assert_called_once_with("pay_captured", 2832, "INR")
+		self.cart.fulfill_order.assert_called_once_with("local-order", "local-payment", "pay_captured")
+
+	def test_mismatched_authorizations_are_never_captured(self):
+		for values in ({"order_id": "order_other"}, {"amount": 1}, {"currency": "USD"}):
+			with self.subTest(values=values):
+				self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity(status="authorized", **values)]}
+				with self.assertRaises(ValueError):
+					self.cart.get_order_status(self.order.name)
+		self.cart.capture_razorpay_payment.assert_not_called()
+		self.cart.fulfill_order.assert_not_called()
+
+	def test_existing_capture_takes_priority_over_another_authorization(self):
+		self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity(id="pay_other", status="authorized"), self.entity()]}
+		self.assertEqual(self.cart.get_order_status(self.order.name)["status"], "Paid")
+		self.cart.capture_razorpay_payment.assert_not_called()
+
+	def test_concurrent_capture_is_verified_after_capture_request_error(self):
+		self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity(status="authorized")]}
+		self.cart.capture_razorpay_payment.side_effect = HTTPError("Already captured")
+		self.cart.fetch_razorpay_payment = Mock(return_value=self.entity())
+		self.assertEqual(self.cart.get_order_status(self.order.name)["status"], "Paid")
+		self.cart.fetch_razorpay_payment.assert_called_once_with("pay_captured")
+
+	def test_failed_capture_without_confirmed_readback_does_not_unlock_access(self):
+		self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity(status="authorized")]}
+		self.cart.capture_razorpay_payment.side_effect = HTTPError("Capture failed")
+		self.cart.fetch_razorpay_payment = Mock(return_value=self.entity(status="authorized"))
+		with self.assertRaises(HTTPError):
+			self.cart.get_order_status(self.order.name)
+		self.cart.fulfill_order.assert_not_called()
+
+	def test_capture_response_must_match_original_payment_and_amount(self):
+		self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity(status="authorized")]}
+		for values in ({"id": "pay_other"}, {"amount": 1}, {"currency": "USD"}, {"order_id": "order_other"}):
+			with self.subTest(values=values):
+				self.cart.capture_razorpay_payment.return_value = self.entity(**values)
+				with self.assertRaises(ValueError):
+					self.cart.get_order_status(self.order.name)
 		self.cart.fulfill_order.assert_not_called()
 
 	def test_finds_capture_after_failed_attempt(self):

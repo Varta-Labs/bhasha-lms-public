@@ -4,6 +4,8 @@ import hashlib
 import hmac
 from decimal import Decimal, ROUND_HALF_UP
 
+from requests.exceptions import RequestException
+
 import frappe
 from frappe import _
 from frappe.utils import cint, flt, fmt_money
@@ -195,6 +197,7 @@ def get_cart_payment_link(courses, address, expected_total, expected_currency, c
 		reference_doctype="LMS Course Order", reference_docname=order.name,
 		payer_email=frappe.session.user, payer_name=address.billing_name,
 		payment_gateway=gateway, redirect_to=redirect, payment=payment.name,
+		payment_capture=1,
 	)
 	create_order(gateway, kwargs, controller)
 	if kwargs.get("order_id"):
@@ -239,6 +242,8 @@ def fulfill_order(order_name, payment_name, payment_id=None):
 def confirm_order_payment(order_name):
 	"""Called only by the payment gateway's authorized-payment document hook."""
 	order = frappe.get_doc("LMS Course Order", order_name)
+	if order.status == "Paid":
+		return
 	data = getattr(frappe.flags, "data", None) or {}
 	payment_name = data.get("payment")
 	requests = frappe.get_all("Integration Request", filters={"reference_doctype": "LMS Course Order", "reference_docname": order.name}, fields=["data"], order_by="creation desc", limit=20)
@@ -253,7 +258,7 @@ def confirm_order_payment(order_name):
 		if details.payment_gateway == "Razorpay":
 			payment = frappe.get_doc("LMS Payment", order.payment)
 			entity = fetch_razorpay_payment(payment_id)
-			if not validate_razorpay_payment(order, payment, entity):
+			if not ensure_razorpay_payment_captured(order, payment, entity):
 				return
 		fulfill_order(order.name, details.payment, payment_id)
 		return
@@ -279,8 +284,39 @@ def validate_razorpay_payment(order, payment, entity):
 	return bool(entity.get("id")) and entity.get("status") == "captured"
 
 
+def capture_razorpay_payment(payment_id, amount, currency):
+	from frappe.integrations.utils import make_post_request
+	settings = frappe.get_doc("Razorpay Settings").get_settings({})
+	return make_post_request(
+		f"https://api.razorpay.com/v1/payments/{payment_id}/capture",
+		auth=(settings.api_key, settings.api_secret),
+		data={"amount": amount, "currency": currency},
+	)
+
+
+def ensure_razorpay_payment_captured(order, payment, entity):
+	# Validate the saved order, currency and amount before moving any funds.
+	if validate_razorpay_payment(order, payment, entity):
+		return True
+	if not entity.get("id") or entity.get("status") != "authorized":
+		return False
+	payment_id = entity["id"]
+	try:
+		captured = capture_razorpay_payment(
+			payment_id, int(Decimal(str(order.total_amount)) * 100), order.currency,
+		)
+	except RequestException:
+		# Auto-capture, another callback or a timed-out response may have won.
+		captured = fetch_razorpay_payment(payment_id)
+		if captured.get("id") != payment_id or not validate_razorpay_payment(order, payment, captured):
+			raise
+	if captured.get("id") != payment_id:
+		frappe.throw(_("Payment confirmation does not match the authorized payment."))
+	return validate_razorpay_payment(order, payment, captured)
+
+
 def reconcile_order_payment(order):
-	"""Recover captured payments when the checkout callback or webhook was missed."""
+	"""Capture verified authorizations and recover missed checkout confirmations."""
 	if order.status != "Pending" or not order.payment:
 		return
 	payment = frappe.get_doc("LMS Payment", order.payment)
@@ -288,8 +324,10 @@ def reconcile_order_payment(order):
 		return
 	# Use the saved gateway order, never a payment ID supplied by the browser.
 	response = fetch_razorpay_resource(f"orders/{payment.order_id}/payments")
-	for entity in response.get("items", []):
-		if entity.get("status") == "captured" and validate_razorpay_payment(order, payment, entity):
+	# A captured attempt takes priority over another authorized attempt.
+	entities = sorted(response.get("items", []), key=lambda entity: entity.get("status") != "captured")
+	for entity in entities:
+		if entity.get("status") in ("captured", "authorized") and ensure_razorpay_payment_captured(order, payment, entity):
 			fulfill_order(order.name, payment.name, entity["id"])
 			order.reload()
 			return
