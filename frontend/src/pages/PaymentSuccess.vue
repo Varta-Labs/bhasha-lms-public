@@ -46,24 +46,31 @@
 					{{
 						orderError
 							? __('Unable to check this order')
-							: __('Confirming your payment')
+							: pollingStopped
+								? __('Payment confirmation is taking longer')
+								: __('Confirming your payment')
 					}}
 				</h1>
 				<p role="status">
 					{{
 						orderError ||
-						__(
-							'Access will appear here once your payment is confirmed. You can safely return to this page later.',
-						)
+						(pollingStopped
+							? __(
+									'We have not confirmed your payment yet. If you have already paid, please check again or contact hello@bhasha.io with your order reference. You do not need to pay again.',
+								)
+							: __(
+									'We are checking your payment with the payment provider. Your courses will appear here once it is confirmed.',
+								))
 					}}
 				</p>
 				<button
 					class="payment-success-action"
 					:disabled="orderStatus.loading"
-					@click="orderStatus.submit()"
+					@click="checkOrder(true)"
 				>
 					{{ __('Check again') }}
 				</button>
+				<p class="mt-5 text-sm">{{ __('Order reference') }}: {{ name }}</p>
 				<router-link :to="{ name: 'Cart' }" class="mt-5 block text-sm">{{
 					__('Return to cart')
 				}}</router-link>
@@ -125,28 +132,51 @@ const props = defineProps({
 
 const cart = useCart()
 const orderError = ref('')
+const pollingStopped = ref(false)
 let pollTimer
 let attempts = 0
+let disposed = false
 const orderStatus = createResource({
 	url: 'lms.lms.cart.get_order_status',
 	makeParams: () => ({ order_name: props.name }),
 	onSuccess(data) {
+		if (disposed) return
 		orderError.value = ''
 		if (data.status == 'Paid') {
 			cart.removePurchased(data.courses.map((c) => c.course))
 			clearTimeout(pollTimer)
 		} else if (++attempts < 20) {
-			pollTimer = setTimeout(() => orderStatus.submit(), 3000)
+			pollTimer = setTimeout(() => checkOrder(), 3000)
+		} else {
+			pollingStopped.value = true
 		}
 	},
 	onError(err) {
+		clearTimeout(pollTimer)
 		orderError.value = err.messages?.[0] || err.message || String(err)
 	},
 })
+const checkOrder = async (restart = false) => {
+	clearTimeout(pollTimer)
+	if (disposed || orderStatus.loading) return
+	if (restart) {
+		attempts = 0
+		pollingStopped.value = false
+	}
+	orderError.value = ''
+	try {
+		await orderStatus.submit()
+	} catch {
+		// The resource's onError handler displays the verification error.
+	}
+}
 onMounted(() => {
-	if (props.type == 'order') orderStatus.submit()
+	if (props.type == 'order') checkOrder()
 })
-onUnmounted(() => clearTimeout(pollTimer))
+onUnmounted(() => {
+	disposed = true
+	clearTimeout(pollTimer)
+})
 
 const { brand } = sessionStore()
 const destination = computed(() =>
@@ -189,7 +219,10 @@ const successMessage = computed(() =>
 )
 
 usePageMeta(() => ({
-	title: props.type == 'order' && orderStatus.data?.status != 'Paid' ? __('Checking payment') : __('Payment successful'),
+	title:
+		props.type == 'order' && orderStatus.data?.status != 'Paid'
+			? __('Checking payment')
+			: __('Payment successful'),
 	icon: brand.favicon,
 }))
 </script>

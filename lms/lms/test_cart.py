@@ -43,6 +43,10 @@ class TestCart(BaseTestUtils):
 		self.original_usd = frappe.db.get_single_value("LMS Settings", "show_usd_equivalent")
 		frappe.db.set_single_value("LMS Settings", {"payment_gateway": "Razorpay", "apply_gst": 0, "show_usd_equivalent": 0})
 		frappe.set_user(self.student.name)
+		# No external payment requests in database-backed cart tests.
+		gateway = patch("lms.lms.cart.fetch_razorpay_resource", return_value={"items": []})
+		self.gateway_payments = gateway.start()
+		self.addCleanup(gateway.stop)
 
 	def tearDown(self):
 		frappe.flags.data = None
@@ -147,6 +151,44 @@ class TestCart(BaseTestUtils):
 			confirm_order_payment(order.name)
 		with self.assertRaises(frappe.ValidationError):
 			fulfill_order(order.name, order.payment)
+
+	def test_status_recovers_a_captured_payment_without_callback_or_webhook(self):
+		order = self.checkout()
+		payment = frappe.get_doc("LMS Payment", order.payment)
+		self.gateway_payments.return_value = {"items": [{
+			"id": "pay_recovered", "order_id": payment.order_id,
+			"status": "captured", "amount": int(round(order.total_amount * 100)), "currency": order.currency,
+		}]}
+		status = get_order_status(order.name)
+		self.assertEqual(status["status"], "Paid")
+		self.assertTrue(all(course["enrolled"] for course in status["courses"]))
+		self.assertEqual(frappe.db.get_value("LMS Payment", order.payment, "payment_id"), "pay_recovered")
+		get_order_status(order.name)
+		self.assertEqual(frappe.db.count("LMS Enrollment", {"payment": order.payment}), 2)
+		self.gateway_payments.assert_called_once_with(f"orders/{payment.order_id}/payments")
+
+	def test_status_waits_for_capture_then_recovers_the_order(self):
+		order = self.checkout()
+		payment = frappe.get_doc("LMS Payment", order.payment)
+		entity = {"id": "pay_delayed", "order_id": payment.order_id,
+			"status": "authorized", "amount": int(round(order.total_amount * 100)), "currency": order.currency}
+		self.gateway_payments.return_value = {"items": [entity]}
+		self.assertEqual(get_order_status(order.name)["status"], "Pending")
+		self.assertFalse(frappe.db.exists("LMS Enrollment", {"payment": order.payment}))
+		entity["status"] = "captured"
+		self.assertEqual(get_order_status(order.name)["status"], "Paid")
+
+	def test_status_rejects_mismatched_captured_payment(self):
+		order = self.checkout()
+		payment = frappe.get_doc("LMS Payment", order.payment)
+		self.gateway_payments.return_value = {"items": [{
+			"id": "pay_wrong", "order_id": payment.order_id,
+			"status": "captured", "amount": 1, "currency": order.currency,
+		}]}
+		with self.assertRaises(frappe.ValidationError):
+			get_order_status(order.name)
+		self.assertEqual(order.reload().status, "Pending")
+		self.assertFalse(frappe.db.exists("LMS Enrollment", {"payment": order.payment}))
 
 	def test_failed_enrollment_rolls_back_the_whole_order(self):
 		order = self.checkout()

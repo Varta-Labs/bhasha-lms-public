@@ -261,10 +261,14 @@ def confirm_order_payment(order_name):
 
 
 def fetch_razorpay_payment(payment_id):
+	return fetch_razorpay_resource(f"payments/{payment_id}")
+
+
+def fetch_razorpay_resource(path):
 	from frappe.integrations.utils import make_get_request
 	settings = frappe.get_doc("Razorpay Settings").get_settings({})
 	return make_get_request(
-		f"https://api.razorpay.com/v1/payments/{payment_id}",
+		f"https://api.razorpay.com/v1/{path}",
 		auth=(settings.api_key, settings.api_secret),
 	)
 
@@ -272,14 +276,31 @@ def fetch_razorpay_payment(payment_id):
 def validate_razorpay_payment(order, payment, entity):
 	if not payment.order_id or entity.get("order_id") != payment.order_id or entity.get("currency") != order.currency or cint(entity.get("amount")) != cint(Decimal(str(order.total_amount)) * 100):
 		frappe.throw(_("Payment amount, currency or gateway order does not match this order."))
-	return entity.get("status") == "captured"
+	return bool(entity.get("id")) and entity.get("status") == "captured"
 
 
-@frappe.whitelist()
+def reconcile_order_payment(order):
+	"""Recover captured payments when the checkout callback or webhook was missed."""
+	if order.status != "Pending" or not order.payment:
+		return
+	payment = frappe.get_doc("LMS Payment", order.payment)
+	if not payment.order_id:
+		return
+	# Use the saved gateway order, never a payment ID supplied by the browser.
+	response = fetch_razorpay_resource(f"orders/{payment.order_id}/payments")
+	for entity in response.get("items", []):
+		if entity.get("status") == "captured" and validate_razorpay_payment(order, payment, entity):
+			fulfill_order(order.name, payment.name, entity["id"])
+			order.reload()
+			return
+
+
+@frappe.whitelist(methods=["POST"])
 def get_order_status(order_name):
 	order = frappe.get_doc("LMS Course Order", order_name)
 	if order.member != frappe.session.user:
 		frappe.throw(_("This order belongs to another learner."), frappe.PermissionError)
+	reconcile_order_payment(order)
 	return {"status": order.status, "courses": [{"course": i.course, "title": i.title, "enrolled": owns(i.course)} for i in order.items]}
 
 
