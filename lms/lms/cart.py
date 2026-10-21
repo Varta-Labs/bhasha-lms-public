@@ -300,6 +300,20 @@ def ensure_razorpay_payment_captured(order, payment, entity):
 		return True
 	if not entity.get("id") or entity.get("status") != "authorized":
 		return False
+	# Serialize captures across this learner's separate checkout attempts.
+	frappe.get_doc("User", order.member, for_update=True)
+	current_order = frappe.get_doc("LMS Course Order", order.name, for_update=True)
+	if current_order.status == "Paid":
+		order.status = "Paid"
+		return False
+	owned = frappe.db.sql(
+		"""SELECT course FROM `tabLMS Enrollment`
+		WHERE member = %(member)s AND course IN %(courses)s
+		AND (payment IS NULL OR payment != %(payment)s) FOR UPDATE""",
+		{"member": order.member, "courses": tuple(item.course for item in order.items), "payment": payment.name},
+	)
+	if owned:
+		frappe.throw(_("Courses in this order are already in your account. No additional payment was captured. Please return to your courses."))
 	payment_id = entity["id"]
 	try:
 		captured = capture_razorpay_payment(

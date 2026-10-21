@@ -20,6 +20,7 @@ class TestCartReconciliation(unittest.TestCase):
 		frappe.session = types.SimpleNamespace(user="learner@example.com")
 		frappe.get_doc = Mock()
 		frappe.db = Mock()
+		frappe.db.sql.return_value = []
 		frappe.throw = Mock(side_effect=lambda message, error=ValueError: self.raise_error(error, message))
 		utils = types.ModuleType("frappe.utils")
 		utils.cint = lambda value: int(value or 0)
@@ -41,7 +42,7 @@ class TestCartReconciliation(unittest.TestCase):
 			reload=Mock(),
 		)
 		self.payment = types.SimpleNamespace(name="local-payment", order_id="order_saved")
-		frappe.get_doc.side_effect = lambda doctype, name: self.order if doctype == "LMS Course Order" else self.payment
+		frappe.get_doc.side_effect = lambda doctype, name, **kwargs: self.order if doctype == "LMS Course Order" else self.payment
 		self.cart.fetch_razorpay_resource = Mock(return_value={"items": []})
 		self.cart.capture_razorpay_payment = Mock(return_value=self.entity())
 		self.cart.fulfill_order = Mock(side_effect=lambda *args: setattr(self.order, "status", "Paid"))
@@ -120,6 +121,26 @@ class TestCartReconciliation(unittest.TestCase):
 				self.cart.capture_razorpay_payment.return_value = self.entity(**values)
 				with self.assertRaises(ValueError):
 					self.cart.get_order_status(self.order.name)
+		self.cart.fulfill_order.assert_not_called()
+
+	def test_superseded_authorization_does_not_charge_for_owned_courses(self):
+		self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity(status="authorized")]}
+		self.frappe.db.sql.return_value = [("main",)]
+		with self.assertRaisesRegex(ValueError, "already in your account"):
+			self.cart.get_order_status(self.order.name)
+		self.cart.capture_razorpay_payment.assert_not_called()
+		self.cart.fulfill_order.assert_not_called()
+		self.frappe.get_doc.assert_any_call("User", self.order.member, for_update=True)
+
+	def test_order_paid_while_waiting_for_capture_lock_is_not_captured_again(self):
+		self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity(status="authorized")]}
+		paid_order = types.SimpleNamespace(status="Paid")
+		self.frappe.get_doc.side_effect = lambda doctype, name, **kwargs: (
+			paid_order if doctype == "LMS Course Order" and kwargs.get("for_update")
+			else self.order if doctype == "LMS Course Order" else self.payment
+		)
+		self.assertEqual(self.cart.get_order_status(self.order.name)["status"], "Paid")
+		self.cart.capture_razorpay_payment.assert_not_called()
 		self.cart.fulfill_order.assert_not_called()
 
 	def test_finds_capture_after_failed_attempt(self):
