@@ -131,3 +131,4 @@ lms.patches.v2_0.set_course_thumbnails
 lms.patches.v2_0.set_hindi_intro_video
 lms.patches.v2_0.update_catalog_offer_and_tamil_media
 lms.patches.v2_0.update_addon_offer_and_video_certificates
+lms.patches.v2_0.update_video_and_checkout_bundle_prices

@@ -55,6 +55,25 @@ class TestCartReconciliation(unittest.TestCase):
 		return {"id": "pay_captured", "order_id": "order_saved", "amount": 2832,
 			"currency": "INR", "status": "captured", **values}
 
+	def test_revised_pack_price_is_exact_for_bundle_and_regular_when_standalone(self):
+		self.frappe._dict = lambda **values: types.SimpleNamespace(**values)
+		self.cart.check_multicurrency.return_value = (1999, "INR")
+		self.cart.owns = Mock(return_value=False)
+		pack = types.SimpleNamespace(
+			name="marathi-addons", title="Marathi Addons Pack", image=None,
+			short_introduction="Practice materials", course_price=1999, currency="INR", amount_usd=0,
+			addon_for_course="marathi-for-everyday-conversations", bundle_discount_percent=74.987494,
+		)
+		for selected, expected in (([], 1999), (["hindi-for-everyday-conversations"], 1999), ([pack.addon_for_course], 500)):
+			with self.subTest(selected=selected):
+				item = self.cart.priced_item(pack, "India", selected)
+				self.assertEqual(item.amount, expected)
+				self.assertEqual(item.discount_amount, 1999 - expected)
+				self.assertEqual(item.addon_for_course, pack.addon_for_course)
+		self.assertEqual(2499 + item.amount, 2999)
+		self.cart.owns.return_value = True
+		self.assertEqual(self.cart.priced_item(pack, "India", []).amount, 500)
+
 	def test_recovers_capture_without_integration_request_or_callback(self):
 		self.cart.fetch_razorpay_resource.return_value = {"items": [self.entity()]}
 		status = self.cart.get_order_status(self.order.name)

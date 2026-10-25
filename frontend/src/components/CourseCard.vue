@@ -120,7 +120,8 @@
 				<div class="flex shrink-0 items-center gap-x-2">
 					<div v-if="course.paid_course" class="flex items-baseline gap-2 font-semibold">
 						<span>{{ course.price }}</span>
-						<s v-if="hasEarlyBirdOffer" class="text-xs font-medium text-ink-gray-5">₹4,999</s>
+						<s v-if="hasVideoCourseOffer" class="text-xs font-medium text-ink-gray-5">₹4,999</s>
+						<span v-if="hasVideoCourseOffer" class="text-xs font-semibold text-violet-700">{{ __('50% off') }}</span>
 					</div>
 
 					<div
@@ -167,11 +168,11 @@ const handleThumbnailError = () => {
 	thumbnailFailed.value = true
 }
 
-const hasEarlyBirdOffer = computed(() => {
+const hasVideoCourseOffer = computed(() => {
 	return Boolean(
 		props.course?.paid_course &&
 			props.course.currency === 'INR' &&
-			Number(props.course.course_price) === 1999,
+			!props.course.addon_for_course && Number(props.course.course_price) === 2499,
 	)
 })
 

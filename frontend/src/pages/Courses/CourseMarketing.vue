@@ -7,9 +7,9 @@
 					<p>{{ marketingIntroduction }}</p>
 					<div class="guest-course__offer">
 						<div class="guest-course__price-row">
-							<span v-if="hasEarlyBirdOffer" class="guest-course__offer-label">{{ __('Early bird offer') }}</span>
+							<span v-if="hasVideoCourseOffer" class="guest-course__offer-label">{{ __('50% off') }}</span>
 							<strong>{{ priceLabel }}</strong>
-							<s v-if="hasEarlyBirdOffer">₹4,999</s>
+							<s v-if="hasVideoCourseOffer">₹4,999</s>
 							<span>{{ __('Lifetime access') }}</span>
 						</div>
 						<a :href="signupUrl" class="guest-course__primary-action" @click="selectCourse">
@@ -257,11 +257,11 @@ const isHindiCourse = computed(() =>
 	!isAddon.value && `${props.course.data?.name || ''} ${props.course.data?.title || ''}`.toLowerCase().includes('hindi'),
 )
 
-const hasEarlyBirdOffer = computed(() =>
+const hasVideoCourseOffer = computed(() =>
 	Boolean(
 		props.course.data?.paid_course &&
 			props.course.data.currency === 'INR' &&
-			Number(props.course.data.course_price) === 1999,
+			!props.course.data.addon_for_course && Number(props.course.data.course_price) === 2499,
 	),
 )
 

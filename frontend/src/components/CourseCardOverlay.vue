@@ -22,8 +22,8 @@
 				class="mb-1 text-xs font-semibold uppercase tracking-[0.12em] text-ink-gray-5"
 			>
 				{{
-					hasEarlyBirdOffer
-						? __('Early bird offer')
+					hasVideoCourseOffer
+						? __('50% off')
 						: course.data?.paid_course
 							? __('Course fee')
 							: __('Full course access')
@@ -34,7 +34,7 @@
 					priceLabel
 				}}</strong>
 				<s
-					v-if="hasEarlyBirdOffer"
+					v-if="hasVideoCourseOffer"
 					class="text-lg font-semibold text-ink-gray-5"
 					>₹4,999</s
 				>
@@ -332,11 +332,11 @@ const priceLabel = computed<string>(() => {
 	return __('Free')
 })
 
-const hasEarlyBirdOffer = computed<boolean>(() => {
+const hasVideoCourseOffer = computed<boolean>(() => {
 	return Boolean(
 		props.course.data?.paid_course &&
 		props.course.data.currency === 'INR' &&
-		Number(props.course.data.course_price) === 1999,
+		!props.course.data.addon_for_course && Number(props.course.data.course_price) === 2499,
 	)
 })
 

@@ -54,6 +54,7 @@ def priced_item(course, country, selected):
 	discount = money(amount * flt(course.bundle_discount_percent) / 100) if eligible else 0
 	return frappe._dict(
 		course=course.name, title=course.title, image=course.image,
+		addon_for_course=course.addon_for_course,
 		short_introduction=course.short_introduction, currency=currency,
 		original_amount=amount, discount_amount=discount, amount=money(amount - discount),
 		bundle_discount_percent=course.bundle_discount_percent,
@@ -124,6 +125,7 @@ def get_cart_summary(courses, country=None, coupon_code=None):
 			if saleable(doc):
 				item = priced_item(doc, country, names)
 				if not items or item.currency == currency:
+					item.original_amount_formatted = fmt_money(item.original_amount, 2, item.currency)
 					item.amount_formatted = fmt_money(item.amount, 2, item.currency)
 					item.discount_amount_formatted = fmt_money(item.discount_amount, 2, item.currency)
 					suggestions.append(item)

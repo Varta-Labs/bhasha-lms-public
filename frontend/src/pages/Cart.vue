@@ -53,57 +53,69 @@
 					>
 						{{ __('Courses you already own were removed from your cart.') }}
 					</p>
-					<div
-						v-for="item in summary.data.items"
-						:key="item.course"
-						class="cart-card cart-item"
-					>
-						<router-link
-							:to="{
-								name: 'CourseDetail',
-								params: { courseName: item.course },
-							}"
-							class="cart-thumbnail"
-							:class="{ 'cart-thumbnail--placeholder': !item.image }"
-							:aria-label="item.title"
-						>
-							<img v-if="item.image" :src="item.image" alt="" loading="lazy" />
-							<BookOpen v-else class="size-8" aria-hidden="true" />
-						</router-link>
-						<div class="cart-item-content">
+					<template v-for="item in visibleItems" :key="item.course">
+						<CartBundleOffer
+							v-if="bundleFor(item)"
+							:course="item"
+							:pack="bundleFor(item)"
+							:selected="cart.courses.includes(bundleFor(item).course)"
+							:loading="summary.loading"
+							@toggle-pack="togglePack(bundleFor(item).course)"
+							@remove-course="cart.remove(item.course)"
+						/>
+						<div v-else class="cart-card cart-item">
 							<router-link
 								:to="{
 									name: 'CourseDetail',
 									params: { courseName: item.course },
 								}"
-								class="cart-item-title"
-								>{{ item.title }}</router-link
+								class="cart-thumbnail"
+								:class="{ 'cart-thumbnail--placeholder': !item.image }"
+								:aria-label="item.title"
 							>
-							<p class="cart-item-intro">
-								{{ item.short_introduction }}
-							</p>
-							<p
-								v-if="item.discount_amount"
-								class="mt-3 text-sm font-medium text-green-700"
-							>
-								{{ summary.data.discount_label }}:
-								{{ item.discount_amount_formatted }}
-							</p>
-							<Button
-								class="cart-remove mt-3"
-								variant="ghost"
-								@click="cart.remove(item.course)"
-								>{{ __('Remove') }}</Button
-							>
+								<img
+									v-if="item.image"
+									:src="item.image"
+									alt=""
+									loading="lazy"
+								/>
+								<BookOpen v-else class="size-8" aria-hidden="true" />
+							</router-link>
+							<div class="cart-item-content">
+								<router-link
+									:to="{
+										name: 'CourseDetail',
+										params: { courseName: item.course },
+									}"
+									class="cart-item-title"
+									>{{ item.title }}</router-link
+								>
+								<p class="cart-item-intro">
+									{{ item.short_introduction }}
+								</p>
+								<p
+									v-if="item.discount_amount"
+									class="mt-3 text-sm font-medium text-green-700"
+								>
+									{{ summary.data.discount_label }}:
+									{{ item.discount_amount_formatted }}
+								</p>
+								<Button
+									class="cart-remove mt-3"
+									variant="ghost"
+									@click="cart.remove(item.course)"
+									>{{ __('Remove') }}</Button
+								>
+							</div>
+							<div class="cart-item-price">
+								<s
+									v-if="item.discount_amount"
+									class="block text-sm text-ink-gray-5"
+									>{{ item.original_amount_formatted }}</s
+								><strong>{{ item.amount_formatted }}</strong>
+							</div>
 						</div>
-						<div class="cart-item-price">
-							<s
-								v-if="item.discount_amount"
-								class="block text-sm text-ink-gray-5"
-								>{{ item.original_amount_formatted }}</s
-							><strong>{{ item.amount_formatted }}</strong>
-						</div>
-					</div>
+					</template>
 					<div
 						v-for="item in summary.data.unavailable_courses"
 						:key="item.course"
@@ -136,45 +148,6 @@
 							}}</Button></router-link
 						>
 					</div>
-					<section
-						v-if="summary.data.suggestions.length"
-						class="cart-card cart-suggestions"
-					>
-						<h2 class="text-lg font-semibold text-ink-gray-9">
-							{{ __('Complete your learning with a practice pack') }}
-						</h2>
-						<div
-							v-for="item in summary.data.suggestions"
-							:key="item.course"
-							class="mt-4"
-						>
-							<router-link
-								:to="{
-									name: 'CourseDetail',
-									params: { courseName: item.course },
-								}"
-								class="font-semibold"
-								>{{ item.title }}</router-link
-							>
-							<p class="cart-item-intro">
-								{{ item.short_introduction }}
-							</p>
-							<p class="my-3 text-sm">
-								{{ item.amount_formatted
-								}}<span
-									v-if="item.discount_amount"
-									class="ml-2 font-medium text-green-700"
-									>{{ __('Save') }} {{ item.discount_amount_formatted }}</span
-								>
-							</p>
-							<Button
-								class="cart-primary"
-								variant="solid"
-								@click="cart.add(item.course)"
-								>{{ __('Add practice pack') }}</Button
-							>
-						</div>
-					</section>
 				</div>
 				<aside v-if="summary.data.items.length" class="cart-card cart-summary">
 					<div class="cart-summary-header">
@@ -251,12 +224,13 @@
 	</div>
 </template>
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Button, FormControl, createResource, usePageMeta } from 'frappe-ui'
 import { useRouter } from 'vue-router'
 import { BookOpen, ChevronLeft, ReceiptText } from 'lucide-vue-next'
 import LMSLogo from '@/components/Icons/LMSLogo.vue'
 import CartLink from '@/components/CartLink.vue'
+import CartBundleOffer from '@/components/CartBundleOffer.vue'
 import { useCart } from '@/stores/cart'
 const cart = useCart()
 const router = useRouter()
@@ -280,6 +254,26 @@ const summary = createResource({
 		error.value = err.messages?.[0] || err.message || String(err)
 	},
 })
+// A selected pack stays beside its video course; standalone packs remain normal items.
+const visibleItems = computed(() => {
+	const items = summary.data?.items || []
+	return items.filter(
+		(item) =>
+			!item.addon_for_course ||
+			!items.some((main) => main.course === item.addon_for_course),
+	)
+})
+function bundleFor(course) {
+	if (course.addon_for_course) return null
+	return [
+		...(summary.data?.items || []),
+		...(summary.data?.suggestions || []),
+	].find((pack) => pack.addon_for_course === course.course)
+}
+function togglePack(course) {
+	if (cart.courses.includes(course)) cart.remove(course)
+	else cart.add(course)
+}
 function retryWithoutCoupon() {
 	cart.couponCode = ''
 	refresh()
@@ -466,12 +460,8 @@ usePageMeta({ title: __('Your cart') })
 .cart-item-price strong {
 	white-space: nowrap;
 }
-.cart-message,
-.cart-suggestions {
+.cart-message {
 	padding: 1.5rem;
-}
-.cart-suggestions {
-	background: linear-gradient(135deg, #f0edff, #fff);
 }
 .cart-summary {
 	position: sticky;
@@ -630,7 +620,6 @@ usePageMeta({ title: __('Your cart') })
 		border-top: 1px solid #ede9f2;
 	}
 	.cart-message,
-	.cart-suggestions,
 	.cart-summary-header,
 	.cart-summary-body {
 		padding: 1.25rem;
