@@ -1,38 +1,65 @@
 <template>
 	<section class="bundle-offer">
 		<header class="bundle-offer__header">
-			<div>
-				<p class="bundle-offer__eyebrow">{{ __('Your video course') }}</p>
+			<div class="bundle-offer__course-row">
 				<router-link
 					:to="{ name: 'CourseDetail', params: { courseName: course.course } }"
-					class="bundle-offer__course"
-					>{{ course.title }}</router-link
+					class="bundle-offer__thumbnail"
+					:aria-label="course.title"
 				>
-				<div class="bundle-offer__course-price">
-					<strong>{{ course.amount_formatted }}</strong>
-					<template
-						v-if="course.currency === 'INR' && course.original_amount === 2499"
+					<img v-if="course.image" :src="course.image" alt="" loading="lazy" />
+					<BookOpen v-else class="size-8" aria-hidden="true" />
+				</router-link>
+				<div class="bundle-offer__course-copy">
+					<p class="bundle-offer__eyebrow">{{ __('Your video course') }}</p>
+					<router-link
+						:to="{
+							name: 'CourseDetail',
+							params: { courseName: course.course },
+						}"
+						class="bundle-offer__course"
+						>{{ course.title }}</router-link
 					>
-						<s>₹4,999</s><span>{{ __('50% off') }}</span>
-					</template>
+					<div class="bundle-offer__course-price">
+						<strong>{{ course.amount_formatted }}</strong>
+						<template
+							v-if="
+								course.currency === 'INR' && course.original_amount === 2499
+							"
+						>
+							<s>₹4,999</s><span>{{ __('50% off') }}</span>
+						</template>
+					</div>
+					<button
+						type="button"
+						class="bundle-offer__remove"
+						@click="$emit('remove-course')"
+					>
+						{{ __('Remove course') }}
+					</button>
 				</div>
-				<button
-					type="button"
-					class="bundle-offer__remove"
-					@click="$emit('remove-course')"
-				>
-					{{ __('Remove course') }}
-				</button>
 			</div>
 			<span class="bundle-offer__badge">{{ __('Bundle offer') }}</span>
 		</header>
 		<div class="bundle-offer__pack">
-			<h2>{{ __('Complete your learning with the Add-ons Pack') }}</h2>
-			<router-link
-				:to="{ name: 'CourseDetail', params: { courseName: pack.course } }"
-				class="bundle-offer__pack-title"
-				>{{ pack.title }}</router-link
-			>
+			<div class="bundle-offer__pack-heading">
+				<router-link
+					:to="{ name: 'CourseDetail', params: { courseName: pack.course } }"
+					class="bundle-offer__thumbnail"
+					:aria-label="pack.title"
+				>
+					<img v-if="pack.image" :src="pack.image" alt="" loading="lazy" />
+					<BookOpen v-else class="size-6" aria-hidden="true" />
+				</router-link>
+				<div>
+					<h2>{{ __('Complete your learning with the Add-ons Pack') }}</h2>
+					<router-link
+						:to="{ name: 'CourseDetail', params: { courseName: pack.course } }"
+						class="bundle-offer__pack-title"
+						>{{ pack.title }}</router-link
+					>
+				</div>
+			</div>
 			<p class="bundle-offer__description">{{ pack.short_introduction }}</p>
 			<p v-if="pack.discount_amount" class="bundle-offer__regular">
 				{{ __('Regular price') }} <s>{{ pack.original_amount_formatted }}</s>
@@ -63,6 +90,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { BookOpen } from 'lucide-vue-next'
 
 const props = defineProps({
 	course: { type: Object, required: true },
@@ -100,6 +128,37 @@ const total = computed(() =>
 	align-items: flex-start;
 	gap: 1rem;
 	padding-bottom: 1.5rem;
+}
+.bundle-offer__course-row {
+	display: grid;
+	grid-template-columns: 8rem minmax(0, 1fr);
+	align-items: start;
+	gap: 1rem;
+	min-width: 0;
+	width: 100%;
+}
+.bundle-offer__course-copy {
+	min-width: 0;
+}
+.bundle-offer__thumbnail {
+	display: grid;
+	place-items: center;
+	overflow: hidden;
+	aspect-ratio: 16 / 9;
+	border-radius: 0.75rem;
+	background: #f0edff;
+	color: #6c5ce7;
+}
+.bundle-offer__thumbnail img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+.bundle-offer__pack-heading {
+	display: grid;
+	grid-template-columns: 6rem minmax(0, 1fr);
+	align-items: start;
+	gap: 1rem;
 }
 .bundle-offer__eyebrow {
 	margin-bottom: 0.5rem;
@@ -239,6 +298,12 @@ const total = computed(() =>
 	outline-offset: 4px;
 }
 @media (max-width: 479px) {
+	.bundle-offer__course-row {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.bundle-offer__course-copy {
+		overflow-wrap: anywhere;
+	}
 	.bundle-offer__header {
 		flex-direction: column-reverse;
 	}
