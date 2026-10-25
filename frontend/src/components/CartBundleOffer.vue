@@ -77,6 +77,13 @@
 					:disabled="loading"
 					@change="$emit('toggle-pack')"
 				/>
+				<span
+					class="bundle-offer__check"
+					:class="{ 'is-selected': selected }"
+					aria-hidden="true"
+				>
+					<Check v-if="selected" class="size-4" />
+				</span>
 				<span>{{ __('Add the Add-ons Pack to my course') }}</span>
 			</label>
 		</div>
@@ -90,7 +97,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { BookOpen } from 'lucide-vue-next'
+import { BookOpen, Check } from 'lucide-vue-next'
 
 const props = defineProps({
 	course: { type: Object, required: true },
@@ -248,6 +255,7 @@ const total = computed(() =>
 	font-weight: 700;
 }
 .bundle-offer__toggle {
+	position: relative;
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
@@ -258,12 +266,35 @@ const total = computed(() =>
 	line-height: 1.5;
 }
 .bundle-offer__toggle input {
+	position: absolute;
+	opacity: 0;
 	flex: none;
 	width: 1.4rem;
 	height: 1.4rem;
 	min-height: 0;
 	accent-color: #6c5ce7;
 	cursor: pointer;
+}
+.bundle-offer__check {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 1.4rem;
+	height: 1.4rem;
+	border: 2px solid #6c5ce7;
+	border-radius: 50%;
+	background: white;
+	color: white;
+}
+.bundle-offer__check.is-selected {
+	background: #6c5ce7;
+}
+.bundle-offer__toggle input:focus-visible + .bundle-offer__check {
+	outline: 3px solid rgba(108, 92, 231, 0.45);
+	outline-offset: 4px;
+}
+.bundle-offer__toggle input:disabled + .bundle-offer__check {
+	opacity: 0.6;
 }
 .bundle-offer__toggle input:disabled {
 	cursor: wait;
