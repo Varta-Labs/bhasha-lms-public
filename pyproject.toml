@@ -16,7 +16,6 @@ dependencies = [
     "cairocffi==1.5.1",
     "razorpay~=1.4.1",
     "fuzzywuzzy~=0.18.0",
-    "google-auth[requests]>=2.29,<3",
     "setuptools>=65,<81",
 ]
 
