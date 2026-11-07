@@ -8,7 +8,7 @@
 				{
 					label: 'Submit',
 					variant: 'solid',
-					onClick: (close) => submitReview(close),
+					onClick: ({ close }) => submitReview(close),
 				},
 			],
 		}"
@@ -29,11 +29,9 @@
 <script setup lang="ts">
 import { Dialog, FormControl, createResource, toast, Rating } from 'frappe-ui'
 import { reactive } from 'vue'
-import type { Resource } from '@/types/api'
 
 const show = defineModel<boolean>()
-const reviews = defineModel<Resource<unknown> | undefined>('reloadReviews')
-const hasReviewed = defineModel<Resource<unknown> | undefined>('hasReviewed')
+const emit = defineEmits<{ submitted: [] }>()
 
 const review = reactive<{ review: string; rating: number }>({
 	review: '',
@@ -51,29 +49,30 @@ const createReview = createResource({
 			doc: {
 				doctype: 'LMS Course Review',
 				course: props.courseName,
-				...review,
+				review: review.review,
+				rating: review.rating / 5,
 			},
 		}
 	},
 })
 
-function submitReview(close: () => void) {
-	review.rating = review.rating / 5
-	createReview.submit(review, {
-		validate() {
-			if (!review.rating) {
-				return 'Please enter a rating.'
-			}
-		},
+async function submitReview(close: () => void) {
+	if (createReview.loading) return
+	if (!review.rating) {
+		toast.error(__('Please enter a rating.'))
+		return
+	}
+	await createReview.submit(undefined, {
 		onSuccess() {
-			reviews.value?.reload()
-			hasReviewed.value?.reload()
+			review.rating = 0
+			review.review = ''
+			emit('submitted')
+			close()
 		},
 		onError(err: { messages?: string[] } | string) {
 			const msg = typeof err === 'string' ? err : err.messages?.[0] ?? 'Error'
 			toast.error(msg)
 		},
-	})
-	close()
+	}).catch(() => {})
 }
 </script>

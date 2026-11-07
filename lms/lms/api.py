@@ -1788,18 +1788,20 @@ def get_course_progress_distribution(course: str):
 			_("You do not have permission to access this course's progress data."), frappe.PermissionError
 		)
 
-	all_progress = frappe.get_all(
+	enrollments = frappe.get_all(
 		"LMS Enrollment",
 		{
 			"course": course,
 		},
 		pluck="progress",
 	)
+	all_progress = [min(100, max(0, flt(progress))) for progress in enrollments]
 
 	average_progress = get_average_course_progress(all_progress)
 	progress_distribution = get_progress_distribution(all_progress)
 
 	return {
+		"enrollment_count": len(enrollments),
 		"average_progress": average_progress,
 		"progress_distribution": progress_distribution,
 	}
@@ -2227,6 +2229,7 @@ def get_lesson_completion_stats(course: str):
 		frappe.throw(_("You do not have permission to access lesson completion stats."))
 
 	CourseProgress = frappe.qb.DocType("LMS Course Progress")
+	Enrollment = frappe.qb.DocType("LMS Enrollment")
 	LessonReference = frappe.qb.DocType("Lesson Reference")
 	ChapterReference = frappe.qb.DocType("Chapter Reference")
 	Lesson = frappe.qb.DocType("Course Lesson")
@@ -2243,13 +2246,15 @@ def get_lesson_completion_stats(course: str):
 			& (CourseProgress.course == course)
 			& (CourseProgress.status == "Complete")
 		)
+		.left_join(Enrollment)
+		.on((Enrollment.course == course) & (Enrollment.member == CourseProgress.member))
 		.select(
 			LessonReference.idx,
 			ChapterReference.idx.as_("chapter_idx"),
 			CourseProgress.lesson,
 			Lesson.title,
 			Lesson.name.as_("lesson_name"),
-			fn.Count(CourseProgress.name).as_("completion_count"),
+			fn.Count(Enrollment.member).distinct().as_("completion_count"),
 		)
 		.where(ChapterReference.parent == course)
 		.groupby(LessonReference.lesson)

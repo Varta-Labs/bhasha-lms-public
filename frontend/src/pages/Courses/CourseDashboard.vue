@@ -23,7 +23,7 @@
 		<div class="course-dashboard__metrics">
 			<NumberChartGraph
 				:title="__('Enrolled')"
-				:value="formatAmount(course.data?.enrollments)"
+				:value="formatAmount(enrollmentCount)"
 			>
 				<template #prefix><UsersRound class="size-5 stroke-[1.8]" /></template>
 			</NumberChartGraph>
@@ -153,7 +153,7 @@
 			</section>
 			<div class="course-dashboard__side">
 				<div
-					v-if="chartDetails.data?.average_progress > 0"
+					v-if="enrollmentCount > 0"
 					class="course-dashboard__panel course-dashboard__progress"
 				>
 					<div class="course-dashboard__panel-title">
@@ -190,7 +190,7 @@
 								<Tooltip :text="String(row.value)">
 									<div class="ms-auto">
 										{{
-											Math.round((row.value / course.data?.enrollments) * 100)
+											Math.round(completionPercentage(row.value))
 										}}%
 									</div>
 								</Tooltip>
@@ -261,10 +261,7 @@
 							<Tooltip :text="String(progress.completion_count)">
 								<div>
 									{{
-										Math.ceil(
-											(progress.completion_count / course.data?.enrollments) *
-												100,
-										)
+										Math.ceil(completionPercentage(progress.completion_count))
 									}}%
 								</div>
 							</Tooltip>
@@ -278,7 +275,7 @@
 		v-if="showEnrollmentModal"
 		v-model="showEnrollmentModal"
 		:course="course"
-		:students="progressList"
+		@enrolled="refreshProgress"
 	/>
 	<StudentCourseProgress
 		v-if="showProgressModal"
@@ -350,6 +347,16 @@ const chartDetails = createResource({
 	auto: true,
 })
 
+const enrollmentCount = computed(() => chartDetails.data?.enrollment_count ?? 0)
+
+function boundedPercentage(value: number) {
+	return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0
+}
+
+function completionPercentage(count: number) {
+	return boundedPercentage((count / enrollmentCount.value) * 100)
+}
+
 const progressList = createListResource({
 	doctype: 'LMS Enrollment',
 	filters: {
@@ -377,12 +384,16 @@ const lessonProgress = createResource({
 	auto: true,
 })
 
+function refreshProgress() {
+	progressList.reload()
+	chartDetails.reload()
+	lessonProgress.reload()
+}
+
 const updateLessonProgress = (value: string) => {
 	if (value == 'completion_rate') {
 		lessonProgress.data?.sort((a: any, b: any) => {
-			const rateA = a.completion_count / (props.course.data?.enrollments || 1)
-			const rateB = b.completion_count / (props.course.data?.enrollments || 1)
-			return rateB - rateA
+			return b.completion_count - a.completion_count
 		})
 	} else if (value == 'index') {
 		lessonProgress.data?.sort((a: any, b: any) => {
@@ -407,8 +418,7 @@ watch([searchFilter], () => {
 })
 
 const averageCompletionRate = computed(() => {
-	let value = Math.ceil(chartDetails.data?.average_progress) || 0
-	return value + '%'
+	return `${Math.ceil(boundedPercentage(chartDetails.data?.average_progress))}%`
 })
 
 const progressColors = computed(() => {

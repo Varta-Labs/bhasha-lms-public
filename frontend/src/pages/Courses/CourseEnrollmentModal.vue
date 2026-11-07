@@ -57,8 +57,8 @@ import { openSettings } from '@/utils'
 import Link from '@/components/Controls/Link.vue'
 
 const show = defineModel<boolean>({ required: true, default: false })
+const emit = defineEmits<{ enrolled: [] }>()
 const student = ref<string | null>(null)
-const students = defineModel<any[]>('students')
 const payment = ref<string | null>(null)
 const purchasedCertificate = ref<boolean>(false)
 
@@ -80,7 +80,7 @@ const enrollStudent = (close: () => void) => {
 		},
 	})
 		.then(() => {
-			students.value?.reload()
+			emit('enrolled')
 			toast.success(__('Student enrolled successfully'))
 			close()
 		})

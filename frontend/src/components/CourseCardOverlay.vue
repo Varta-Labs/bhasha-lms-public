@@ -158,9 +158,11 @@
 						class="size-4.5 stroke-2 shrink-0 text-bhasha-purple dark:text-purple-400"
 					/>
 					<span>{{
-						course.data?.video_link
-							? __('On demand course video')
-							: __('On demand practice audio & video')
+						course.data?.addon_for_course
+							? __('On demand video')
+							: course.data?.video_link
+								? __('On demand course video')
+								: __('On demand practice audio & video')
 					}}</span>
 				</div>
 				<div class="course-include-row">
@@ -181,13 +183,15 @@
 					/>
 					<span>
 						{{
-							(course.data?.quiz_count || 0) > 0
-								? `${course.data.quiz_count} ${course.data.quiz_count === 1 ? __('Quiz topic') : __('Quiz topics')}`
-								: __('Interactive exercises & roleplays')
+							course.data?.addon_for_course
+								? __('Helpful exercises & workbooks')
+								: (course.data?.quiz_count || 0) > 0
+									? `${course.data.quiz_count} ${course.data.quiz_count === 1 ? __('Quiz topic') : __('Quiz topics')}`
+									: __('Interactive exercises & roleplays')
 						}}
 					</span>
 				</div>
-				<div class="course-include-row">
+				<div v-if="!course.data?.addon_for_course" class="course-include-row">
 					<Award
 						class="size-4.5 stroke-2 shrink-0 text-rose-500 dark:text-rose-400"
 					/>

@@ -364,6 +364,7 @@
 					:courseName="course.data.name"
 					:avg_rating="course.data.rating"
 					:membership="course.data.membership || null"
+					@reviewed="course.reload()"
 				/>
 				<RelatedCourses :courseName="course.data.name" />
 			</div>

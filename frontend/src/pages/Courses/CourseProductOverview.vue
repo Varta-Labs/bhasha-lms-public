@@ -77,7 +77,12 @@
 						<div v-for="star in [5,4,3,2,1]" :key="star" class="product-course__rating-row"><span>{{ star }} {{ __('stars') }}</span><div><span :style="{ width: ratingPercent(star) + '%' }" /></div><span>{{ ratingPercent(star) }}%</span></div>
 					</div>
 				</div>
-				<CourseReviews :courseName="course.data.name" :avg_rating="course.data.rating" :membership="course.data.membership || null" />
+				<CourseReviews
+					:courseName="course.data.name"
+					:avg_rating="course.data.rating"
+					:membership="course.data.membership || null"
+					@reviewed="course.reload()"
+				/>
 			</div>
 		</section>
 

@@ -92,9 +92,8 @@
 	</div>
 	<ReviewModal
 		v-model="showReviewModal"
-		v-model:reloadReviews="reviews"
-		v-model:hasReviewed="hasReviewed"
 		:courseName="courseName"
+		@submitted="refreshReviews"
 	/>
 </template>
 
@@ -124,6 +123,7 @@ const props = defineProps<{
 	avg_rating?: string
 	membership?: Membership | null
 }>()
+const emit = defineEmits<{ reviewed: [] }>()
 
 const hasReviewed = createResource({
 	url: 'frappe.client.get_count',
@@ -167,6 +167,12 @@ const visibleReviews = computed(() => {
 const canShowMore = computed(
 	() => !showAll.value && (reviews.data?.length || 0) > PREVIEW_LIMIT
 )
+
+function refreshReviews() {
+	reviews.reload()
+	hasReviewed.reload()
+	emit('reviewed')
+}
 
 function isClampable(text: string) {
 	return text.length > CLAMP_THRESHOLD

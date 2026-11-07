@@ -27,6 +27,9 @@ from frappe.utils import (
 	validate_email_address,
 )
 from frappe.utils.html_utils import sanitize_html
+from google.auth.exceptions import GoogleAuthError
+from google.auth.transport.requests import AuthorizedSession
+from google.oauth2.service_account import Credentials
 from pypika import Case
 from pypika import functions as fn
 
@@ -283,10 +286,15 @@ def get_instructors(doctype: str, docname: str):
 
 
 def get_average_rating(course: str):
-	ratings = [review.rating for review in get_reviews(course)]
-	if not len(ratings):
+	Review = frappe.qb.DocType("LMS Course Review")
+	average = frappe.qb.from_(Review).select(fn.Avg(Review.rating)).where(Review.course == course).run()[0][0]
+	if average is None:
 		return None
-	return sum(ratings) / len(ratings)
+	return flt(average) * _course_review_rating_scale()
+
+
+def _course_review_rating_scale():
+	return cint(frappe.get_meta("LMS Course Review").get_field("rating").options) or 5
 
 
 @frappe.whitelist(allow_guest=True)
@@ -295,16 +303,13 @@ def get_reviews(course: str):
 	reviews = frappe.get_all(
 		"LMS Course Review",
 		{"course": course},
-		["review", "rating", "owner", "creation"],
+		["name", "review", "rating", "owner", "creation"],
 		order_by="creation desc",
 	)
 
-	out_of_ratings = frappe.db.get_all(
-		"DocField", {"parent": "LMS Course Review", "fieldtype": "Rating"}, ["options"]
-	)
-	out_of_ratings = (len(out_of_ratings) and out_of_ratings[0].options) or 5
+	out_of_ratings = _course_review_rating_scale()
 	for review in reviews:
-		review.rating = review.rating * out_of_ratings
+		review.rating = flt(review.rating) * out_of_ratings
 		review.owner_details = frappe.db.get_value(
 			"User", review.owner, ["username", "full_name", "user_image"], as_dict=True
 		)
@@ -963,6 +968,8 @@ def get_course_details(course: str):
 	course_details.instructors = get_instructors("LMS Course", course_details.name)
 	course_details.membership = membership
 	course_details.rating_count = frappe.db.count("LMS Course Review", {"course": course})
+	precision = frappe.get_system_settings("float_precision") or 3
+	course_details.rating = str(flt(get_average_rating(course), precision))
 	course_details.update(get_course_content_stats(course))
 
 	for json_field in ("course_highlights", "learning_outcomes", "faqs", "testimonials"):
@@ -1337,6 +1344,27 @@ def _get_google_slides_id(block: dict) -> str | None:
 	return None
 
 
+def _fetch_slide_deck_pdf(presentation_id: str) -> bytes:
+	response = requests.get(
+		f"https://docs.google.com/presentation/d/{presentation_id}/export/pdf",
+		headers={"User-Agent": "Bhasha LMS slide viewer"},
+		timeout=30,
+	)
+	credentials_file = frappe.conf.get("lms_slide_deck_credentials_file")
+	if response.status_code in (401, 403) and credentials_file:
+		credentials = Credentials.from_service_account_file(
+			credentials_file, scopes=["https://www.googleapis.com/auth/drive.readonly"]
+		)
+		with AuthorizedSession(credentials, refresh_timeout=15) as session:
+			response = session.get(
+				f"https://www.googleapis.com/drive/v3/files/{presentation_id}/export",
+				params={"mimeType": "application/pdf"},
+				timeout=30,
+			)
+	response.raise_for_status()
+	return response.content
+
+
 @frappe.whitelist(allow_guest=True)
 @rate_limit(limit=120, seconds=60 * 60)
 def get_lesson_slide_deck(course: str, chapter: int, lesson: int, block: int):
@@ -1361,16 +1389,10 @@ def get_lesson_slide_deck(course: str, chapter: int, lesson: int, block: int):
 	downloaded = not pdf
 	if not pdf:
 		try:
-			response = requests.get(
-				f"https://docs.google.com/presentation/d/{presentation_id}/export/pdf",
-				headers={"User-Agent": "Bhasha LMS slide viewer"},
-				timeout=30,
-			)
-			response.raise_for_status()
-		except requests.RequestException:
+			pdf = _fetch_slide_deck_pdf(presentation_id)
+		except (requests.RequestException, GoogleAuthError, OSError, ValueError):
 			frappe.log_error(title="Google Slides export failed", message=frappe.get_traceback())
 			frappe.throw(_("The presentation could not be loaded right now. Please try again."))
-		pdf = response.content
 
 	if not pdf.startswith(b"%PDF") or len(pdf) > MAX_SLIDE_DECK_BYTES:
 		frappe.throw(_("The presentation export was invalid or too large."))
