@@ -23,6 +23,30 @@ const routes = [
 		meta: { public: true, noSidebar: true },
 	},
 	{
+		path: '/terms',
+		name: 'TermsAndConditions',
+		component: () => import('@/pages/TermsAndConditions.vue'),
+		meta: { public: true, noSidebar: true },
+	},
+	{
+		path: '/refund-policy',
+		name: 'RefundPolicy',
+		component: () => import('@/pages/RefundPolicy.vue'),
+		meta: { public: true, noSidebar: true },
+	},
+	{
+		path: '/shipping-policy',
+		name: 'ShippingPolicy',
+		component: () => import('@/pages/ShippingPolicy.vue'),
+		meta: { public: true, noSidebar: true },
+	},
+	{
+		path: '/contact',
+		name: 'ContactUs',
+		component: () => import('@/pages/ContactUs.vue'),
+		meta: { public: true, noSidebar: true },
+	},
+	{
 		path: '/courses',
 		name: 'Courses',
 		component: () => import('@/pages/Courses/Courses.vue'),

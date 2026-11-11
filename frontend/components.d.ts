@@ -77,6 +77,8 @@ declare module 'vue' {
     JobApplicationModal: typeof import('./src/components/Modals/JobApplicationModal.vue')['default']
     JobCard: typeof import('./src/components/JobCard.vue')['default']
     LayoutHeader: typeof import('./src/components/Layouts/LayoutHeader.vue')['default']
+    LegalLinks: typeof import('./src/components/LegalLinks.vue')['default']
+    LegalPage: typeof import('./src/components/LegalPage.vue')['default']
     LessonContent: typeof import('./src/components/LessonContent.vue')['default']
     LessonHelp: typeof import('./src/components/LessonHelp.vue')['default']
     LessonModal: typeof import('./src/components/Modals/LessonModal.vue')['default']

@@ -86,7 +86,7 @@
 			</div>
 		</section>
 
-		<footer class="product-course__footer"><div class="product-course__shell"><img :src="brandLogo" alt="bhasha.io" class="product-course__brand-logo" /><span>{{ __('Practical language learning for real conversations.') }}</span><router-link :to="{ name: 'PrivacyPolicy' }">{{ __('Privacy Policy') }}</router-link><a href="https://github.com/Varta-Labs/bhasha-lms-public" target="_blank" rel="noopener noreferrer" :aria-label="__('Source code')" :title="__('Source code')"><img :src="githubIcon" alt="" class="product-course__github-icon" /></a></div></footer>
+		<footer class="product-course__footer"><div class="product-course__shell"><img :src="brandLogo" alt="bhasha.io" class="product-course__brand-logo" /><span>{{ __('Practical language learning for real conversations.') }}</span><LegalLinks /><a href="https://github.com/Varta-Labs/bhasha-lms-public" target="_blank" rel="noopener noreferrer" :aria-label="__('Source code')" :title="__('Source code')"><img :src="githubIcon" alt="" class="product-course__github-icon" /></a></div></footer>
 		<a v-if="showFloatingAction && primaryActionHref" :href="primaryActionHref" class="product-course__floating-action">{{ primaryActionLabel }}</a>
 		<button v-else-if="showFloatingAction" type="button" class="product-course__floating-action" @click="enrollStudent">{{ primaryActionLabel }}</button>
 	</div>
@@ -97,6 +97,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { createResource } from 'frappe-ui'
 import { Check, CheckCircle2, ChevronRight, PlayCircle, Star, Tag } from 'lucide-vue-next'
 import CourseCardOverlay from '@/components/CourseCardOverlay.vue'
+import LegalLinks from '@/components/LegalLinks.vue'
 import CourseReviews from '@/components/CourseReviews.vue'
 import { getLmsRoute } from '@/utils/basePath'
 import type { CourseDetails, OutlineChapter, Resource } from '@/types/api'

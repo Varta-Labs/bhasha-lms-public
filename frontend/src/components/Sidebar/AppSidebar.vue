@@ -178,19 +178,15 @@
 					<img :src="githubIcon" alt="" class="size-4 shrink-0" />
 				</a>
 				<router-link
+					v-if="sidebarStore.isSidebarCollapsed"
 					:to="{ name: 'PrivacyPolicy' }"
-					class="flex min-h-8 items-center gap-2 rounded px-2 text-xs text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9"
-					:class="
-						sidebarStore.isSidebarCollapsed ? 'size-8 justify-center' : 'flex-1'
-					"
+					class="flex size-8 items-center justify-center rounded text-ink-gray-6 hover:bg-surface-gray-2 hover:text-ink-gray-9"
 					:aria-label="__('Privacy Policy')"
 					:title="__('Privacy Policy')"
 				>
 					<ShieldCheck class="size-4 shrink-0 stroke-1.5" />
-					<span v-if="!sidebarStore.isSidebarCollapsed">{{
-						__('Privacy Policy')
-					}}</span>
 				</router-link>
+				<LegalLinks v-else subtle class="flex-1 px-1 text-ink-gray-6" />
 			</div>
 
 			<div
@@ -347,6 +343,7 @@ import InviteIcon from '@/components/Icons/InviteIcon.vue'
 import UserDropdown from '@/components/Sidebar/UserDropdown.vue'
 import CollapseSidebar from '@/components/Icons/CollapseSidebar.vue'
 import SidebarLink from '@/components/Sidebar/SidebarLink.vue'
+import LegalLinks from '@/components/LegalLinks.vue'
 import CommandPalette from '@/components/CommandPalette/CommandPalette.vue'
 
 const { user } = sessionStore()

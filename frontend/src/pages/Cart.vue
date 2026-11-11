@@ -217,6 +217,17 @@
 							@click="checkout"
 							>{{ __('Continue to checkout') }}</Button
 						>
+						<p class="cart-legal">
+							{{ __('By continuing, you agree to our') }}
+							<router-link :to="{ name: 'TermsAndConditions' }">{{
+								__('Terms & Conditions')
+							}}</router-link>
+							{{ __('and') }}
+							<router-link :to="{ name: 'RefundPolicy' }">{{
+								__('Refund Policy')
+							}}</router-link
+							>.
+						</p>
 					</div>
 				</aside>
 			</div>
@@ -586,6 +597,19 @@ usePageMeta({ title: __('Your cart') })
 .cart-page :deep(.cart-checkout) {
 	width: 100%;
 	margin-top: 1.5rem;
+}
+.cart-legal {
+	margin-top: 0.75rem;
+	color: #71717a;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	text-align: center;
+}
+.cart-legal a {
+	color: #4a38c2;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 2px;
 }
 .cart-page :deep(input) {
 	min-height: 2.5rem;
