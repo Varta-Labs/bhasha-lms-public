@@ -24,6 +24,11 @@
 						)
 					}}
 				</p>
+				<div class="payment-success-reference">
+					<span>{{ __('Order reference') }}</span>
+					<strong>{{ name }}</strong>
+					<small>{{ __('Note this down for reference.') }}</small>
+				</div>
 				<router-link
 					v-for="course in orderStatus.data.courses"
 					:key="course.course"
@@ -337,6 +342,38 @@ usePageMeta(() => ({
 	color: #625d68;
 	font-size: 1rem;
 	line-height: 1.65;
+}
+
+.payment-success-reference {
+	display: flex;
+	max-width: 27rem;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.2rem;
+	margin: 1.5rem auto 0;
+	padding: 0.85rem 1rem;
+	border: 1px dashed rgba(108, 92, 231, 0.4);
+	border-radius: 1rem;
+}
+
+.payment-success-reference span {
+	color: #7c7c7c;
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.payment-success-reference strong {
+	color: #383838;
+	font-size: 1rem;
+	overflow-wrap: anywhere;
+	user-select: all;
+}
+
+.payment-success-reference small {
+	color: #625d68;
+	font-size: 0.8125rem;
 }
 
 .payment-success-detail {

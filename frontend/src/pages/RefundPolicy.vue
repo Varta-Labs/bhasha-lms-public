@@ -1,5 +1,5 @@
 <template>
-	<LegalPage :title="__('Cancellation & Refund Policy')" updated="11 November 2026">
+	<LegalPage :title="__('Cancellation & Refund Policy')" updated="12 November 2026">
 		<template #intro>
 			<p>
 				This policy explains when and how you can get a refund for courses and
@@ -24,7 +24,7 @@
 
 		<section id="request">
 			<h2>How to request a refund</h2>
-			<p>Email <a href="mailto:hello@bhasha.io?subject=Refund%20request">hello@bhasha.io</a> from your account email with your order ID (or the payment ID from your Razorpay receipt) and the reason for your request. We will respond within 2 working days.</p>
+			<p>Email <a href="mailto:hello@bhasha.io?subject=Refund%20request">hello@bhasha.io</a> from your account email with the reason for your request. If you have it, include your order reference (shown after payment) or the payment ID from Razorpay’s receipt. We will respond within 2 working days.</p>
 		</section>
 
 		<section id="processing">

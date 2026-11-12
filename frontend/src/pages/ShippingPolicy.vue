@@ -1,5 +1,5 @@
 <template>
-	<LegalPage :title="__('Shipping & Delivery Policy')" updated="11 November 2026">
+	<LegalPage :title="__('Shipping & Delivery Policy')" updated="12 November 2026">
 		<template #intro>
 			<p>
 				Bhasha sells <strong>digital courses only</strong>. No physical goods
@@ -14,7 +14,7 @@
 
 		<section id="delays">
 			<h2>Delays</h2>
-			<p>If a course does not appear within 30 minutes of a successful payment, refresh the page or sign out and back in. If it is still missing, email <a href="mailto:hello@bhasha.io">hello@bhasha.io</a> with your order ID and we will resolve it within 1 working day.</p>
+			<p>If a course does not appear within 30 minutes of a successful payment, refresh the page or sign out and back in. If it is still missing, email <a href="mailto:hello@bhasha.io">hello@bhasha.io</a> from your account email, including your order reference (shown after payment) or the payment ID from Razorpay’s receipt if you have it, and we will resolve it within 1 working day.</p>
 		</section>
 
 		<section id="requirements">

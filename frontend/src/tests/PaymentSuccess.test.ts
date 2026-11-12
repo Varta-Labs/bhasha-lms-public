@@ -74,6 +74,8 @@ describe('cart payment confirmation', () => {
 		await vi.advanceTimersByTimeAsync(3000)
 		expect(page.text()).toContain('Your courses are ready')
 		expect(page.text()).toContain('Addons pack')
+		expect(page.text()).toContain('order-reference')
+		expect(page.text()).toContain('Note this down for reference.')
 		expect(removePurchased).toHaveBeenCalledWith(['main', 'addon'])
 		await vi.advanceTimersByTimeAsync(60000)
 		expect(fetchStatus).toHaveBeenCalledTimes(2)
