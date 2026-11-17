@@ -110,7 +110,8 @@ def get_billing_type(doctype: str, payment_for_certificate: int) -> str:
 			frappe.throw(_("Certificates can only be purchased for courses."))
 		return "certificate"
 	if doctype == "LMS Course":
-		return "course"
+		# Single-course checkout was replaced by the cart in October 2026.
+		frappe.throw(_("Courses are bought through the cart. Please add this course to your cart to continue."))
 	if doctype == "LMS Batch":
 		return "batch"
 	frappe.throw(_("Invalid payment document type."))

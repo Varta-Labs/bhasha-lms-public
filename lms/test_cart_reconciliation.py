@@ -26,6 +26,7 @@ class TestCartReconciliation(unittest.TestCase):
 		utils.cint = lambda value: int(value or 0)
 		utils.flt = float
 		utils.fmt_money = Mock()
+		utils.now_datetime = Mock()
 		lms_utils = types.ModuleType("lms.lms.utils")
 		for name in ("apply_coupon", "apply_gst", "check_multicurrency", "get_lms_route"):
 			setattr(lms_utils, name, Mock())

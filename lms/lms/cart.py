@@ -8,7 +8,7 @@ from requests.exceptions import RequestException
 
 import frappe
 from frappe import _
-from frappe.utils import cint, flt, fmt_money
+from frappe.utils import cint, flt, fmt_money, now_datetime
 
 from lms.lms.utils import (
 	apply_coupon,
@@ -214,7 +214,7 @@ def has_course_order_payment(payment, member, course):
 	paid = frappe.db.get_value("LMS Payment", payment, ["member", "payment_received", "payment_for_document_type", "payment_for_document"], as_dict=True)
 	if not paid or paid.member != member or not paid.payment_received or paid.payment_for_document_type != "LMS Course Order":
 		return False
-	return bool(frappe.db.exists("LMS Course Order", {"name": paid.payment_for_document, "member": member, "payment": payment, "status": "Paid"}) and frappe.db.exists("LMS Course Order Item", {"parent": paid.payment_for_document, "parenttype": "LMS Course Order", "course": course}))
+	return bool(frappe.db.exists("LMS Course Order", {"name": paid.payment_for_document, "member": member, "payment": payment, "status": "Paid"}) and frappe.db.exists("LMS Course Order Item", {"parent": paid.payment_for_document, "parenttype": "LMS Course Order", "course": course, "refunded": 0}))
 
 
 def fulfill_order(order_name, payment_name, payment_id=None):
@@ -232,13 +232,48 @@ def fulfill_order(order_name, payment_name, payment_id=None):
 		frappe.db.set_value("LMS Payment", payment.name, {"payment_received": 1, "payment_id": payment_id})
 		frappe.db.set_value("LMS Course Order", order.name, "status", "Paid")
 		for item in order.items:
-			if not owns(item.course, order.member):
+			if not item.refunded and not owns(item.course, order.member):
 				frappe.get_doc({"doctype": "LMS Enrollment", "member": order.member, "course": item.course, "payment": payment.name}).insert(ignore_permissions=True)
 		if order.coupon:
 			frappe.db.sql("UPDATE `tabLMS Coupon` SET redemption_count = COALESCE(redemption_count, 0) + 1 WHERE name = %s", order.coupon)
 	except Exception:
 		frappe.db.rollback(save_point="course_order_fulfillment")
 		raise
+
+
+@frappe.whitelist(methods=["POST"])
+def remove_course_enrollment(enrollment, refunded=0, refund_reference=None):
+	"""Remove a learner from a course, optionally recording a refund issued in the payment gateway."""
+	frappe.only_for(("Moderator", "System Manager"))
+	enrollment = frappe.get_doc("LMS Enrollment", enrollment)
+	refunded = bool(cint(refunded))
+	if refunded:
+		mark_course_refunded(enrollment.member, enrollment.course, (refund_reference or "").strip()[:140] or None)
+	frappe.delete_doc("LMS Enrollment", enrollment.name, ignore_permissions=True)
+	from lms.lms.doctype.lms_enrollment.lms_enrollment import update_program_progress
+	update_program_progress(enrollment.member)
+	return {"refunded": refunded}
+
+
+def mark_course_refunded(member, course, reference=None):
+	"""Flag every unrefunded purchase of the course so it can no longer unlock an enrollment."""
+	refund = {"refunded": 1, "refunded_on": now_datetime(), "refunded_by": frappe.session.user, "refund_reference": reference}
+	items = frappe.db.sql(
+		"""SELECT item.name FROM `tabLMS Course Order Item` item
+		JOIN `tabLMS Course Order` o ON o.name = item.parent AND item.parenttype = 'LMS Course Order'
+		WHERE o.member = %(member)s AND o.status = 'Paid' AND item.course = %(course)s AND item.refunded = 0""",
+		{"member": member, "course": course}, pluck=True,
+	)
+	payments = frappe.get_all("LMS Payment", filters={
+		"member": member, "payment_for_document_type": "LMS Course", "payment_for_document": course,
+		"payment_received": 1, "refunded": 0,
+	}, pluck="name")
+	if not items and not payments:
+		frappe.throw(_("No paid, unrefunded purchase of this course was found for this student. Remove them without recording a refund."))
+	for name in items:
+		frappe.db.set_value("LMS Course Order Item", name, refund)
+	for name in payments:
+		frappe.db.set_value("LMS Payment", name, refund)
 
 
 def confirm_order_payment(order_name):

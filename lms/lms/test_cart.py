@@ -12,6 +12,7 @@ from lms.lms.cart import (
 	get_cart_summary,
 	get_order_status,
 	razorpay_webhook,
+	remove_course_enrollment,
 )
 from lms.lms.test_helpers import BaseTestUtils
 
@@ -236,6 +237,27 @@ class TestCart(BaseTestUtils):
 		self.webhook(order)
 		with self.assertRaises(frappe.ValidationError):
 			frappe.get_doc({"doctype": "LMS Enrollment", "member": self.student.name, "course": self.addon.name, "payment": order.payment}).insert(ignore_permissions=True)
+
+	def test_refunded_removal_blocks_reentry_through_the_old_order(self):
+		order = self.checkout()
+		self.webhook(order)
+		enrollment = frappe.db.get_value("LMS Enrollment", {"member": self.student.name, "course": self.main.name})
+		with self.assertRaises(frappe.PermissionError):
+			remove_course_enrollment(enrollment, refunded=1)
+		frappe.set_user("Administrator")
+		self.assertEqual(remove_course_enrollment(enrollment, refunded=1, refund_reference="rfnd_cart_test"), {"refunded": True})
+		self.assertFalse(frappe.db.exists("LMS Enrollment", enrollment))
+		items = {item.course: item for item in frappe.get_all("LMS Course Order Item", filters={"parent": order.name}, fields=["course", "refunded", "refunded_by", "refund_reference"])}
+		self.assertEqual((items[self.main.name].refunded, items[self.main.name].refunded_by, items[self.main.name].refund_reference), (1, "Administrator", "rfnd_cart_test"))
+		self.assertEqual(items[self.addon.name].refunded, 0)
+		self.assertEqual(order.reload().status, "Paid")
+		# A repeated webhook must not restore the refunded course.
+		self.webhook(order)
+		self.assertFalse(frappe.db.exists("LMS Enrollment", {"member": self.student.name, "course": self.main.name}))
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc({"doctype": "LMS Enrollment", "member": self.student.name, "course": self.main.name, "payment": order.payment}).insert(ignore_permissions=True)
+		frappe.set_user(self.student.name)
+		self.assertEqual(get_cart_summary([self.main.name], "India").owned_courses, [])
 
 	def test_confirmed_snapshot_survives_catalog_changes(self):
 		order = self.checkout()

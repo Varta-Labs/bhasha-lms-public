@@ -48,17 +48,42 @@ class TestLMSPayment(BaseTestUtils):
 
 	def test_get_payment_link_rechecks_billing_access(self):
 		course = self._create_paid_course()
-		self._create_paid_lms_payment(course.name, payment_received=1)
-		self._create_enrollment(self.student.email, course.name)
+		frappe.set_user("Administrator")
+		enrollment = self._create_enrollment(self.student.email, course.name)
+		frappe.db.set_value("LMS Enrollment", enrollment.name, "purchased_certificate", 1)
+		frappe.set_user(self.student.email)
 
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaises(frappe.ValidationError) as context:
 			get_payment_link(
 				doctype="LMS Course",
 				docname=course.name,
 				address=self._billing_address(),
-				payment_for_certificate=0,
+				payment_for_certificate=1,
 				country="India",
 			)
+
+		self.assertIn("already purchased the certificate", str(context.exception))
+
+	def test_single_course_checkout_is_retired(self):
+		course = self._create_paid_course()
+
+		with patch("lms.lms.payments.get_controller", return_value=DummyPaymentController()):
+			with self.assertRaises(frappe.ValidationError) as context:
+				get_payment_link(
+					doctype="LMS Course",
+					docname=course.name,
+					address=self._billing_address(),
+					payment_for_certificate=0,
+					country="India",
+				)
+
+		self.assertIn("bought through the cart", str(context.exception))
+		self.assertFalse(
+			frappe.db.exists(
+				"LMS Payment",
+				{"member": self.student.email, "payment_for_document": course.name},
+			)
+		)
 
 	def test_razorpay_checkout_url_uses_lms_wrapper(self):
 		url = get_razorpay_checkout_url(
@@ -93,7 +118,7 @@ class TestLMSPayment(BaseTestUtils):
 				doctype="LMS Course",
 				docname=course.name,
 				address=self._billing_address(),
-				payment_for_certificate=0,
+				payment_for_certificate=1,
 				country="India",
 			)
 
@@ -103,6 +128,7 @@ class TestLMSPayment(BaseTestUtils):
 				"member": self.student.email,
 				"payment_for_document_type": "LMS Course",
 				"payment_for_document": course.name,
+				"payment_for_certificate": 1,
 			},
 		)
 
@@ -119,7 +145,7 @@ class TestLMSPayment(BaseTestUtils):
 					doctype="LMS Course",
 					docname=course.name,
 					address=self._billing_address(),
-					payment_for_certificate=0,
+					payment_for_certificate=1,
 					country="India",
 				)
 

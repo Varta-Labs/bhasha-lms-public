@@ -149,22 +149,52 @@
 				</div>
 			</div>
 		</template>
+		<template v-if="canRemove" #actions>
+			<div class="flex justify-end">
+				<Button variant="subtle" theme="red" @click="showRemoveModal = true">
+					<template #prefix><UserMinus class="size-4 stroke-2" /></template>
+					{{ __('Remove from course') }}
+				</Button>
+			</div>
+		</template>
 	</Dialog>
+	<CourseRemoveStudentModal
+		v-if="showRemoveModal"
+		v-model="showRemoveModal"
+		:course="course"
+		:student="student"
+		@removed="studentRemoved"
+	/>
 </template>
 <script setup lang="ts">
 import {
 	Avatar,
 	Badge,
+	Button,
 	createListResource,
 	createResource,
 	Dialog,
 	Tooltip,
 } from 'frappe-ui'
 import ProgressBar from '@/components/ProgressBar.vue'
-import { computed } from 'vue'
-import { Check, Minus } from 'lucide-vue-next'
+import CourseRemoveStudentModal from '@/pages/Courses/CourseRemoveStudentModal.vue'
+import { computed, ref } from 'vue'
+import { Check, Minus, UserMinus } from 'lucide-vue-next'
+import { usersStore } from '@/stores/user'
 
 const show = defineModel<boolean>({ required: true, default: false })
+const emit = defineEmits<{ removed: [] }>()
+const showRemoveModal = ref<boolean>(false)
+const { userResource } = usersStore()
+const canRemove = computed(
+	() =>
+		userResource.data?.is_moderator || userResource.data?.is_system_manager,
+)
+
+const studentRemoved = () => {
+	show.value = false
+	emit('removed')
+}
 
 const props = defineProps<{
 	course: any

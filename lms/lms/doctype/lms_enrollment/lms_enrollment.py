@@ -74,6 +74,7 @@ class LMSEnrollment(Document):
 					"payment_for_document": self.course,
 					"member": self.member,
 					"payment_received": True,
+					"refunded": 0,
 				},
 			)
 

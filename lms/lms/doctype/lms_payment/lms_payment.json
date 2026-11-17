@@ -32,7 +32,12 @@
   "order_id",
   "column_break_monu",
   "gstin",
-  "pan"
+  "pan",
+  "refund_section",
+  "refunded",
+  "refunded_on",
+  "refunded_by",
+  "refund_reference"
  ],
  "fields": [
   {
@@ -189,6 +194,38 @@
    "fieldname": "member_consent",
    "fieldtype": "Check",
    "label": "Member Consent"
+  },
+  {
+   "fieldname": "refund_section",
+   "fieldtype": "Section Break",
+   "label": "Refund"
+  },
+  {
+   "default": "0",
+   "fieldname": "refunded",
+   "fieldtype": "Check",
+   "label": "Refunded",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "refunded_on",
+   "fieldtype": "Datetime",
+   "label": "Refunded On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "refunded_by",
+   "fieldtype": "Link",
+   "label": "Refunded By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "refund_reference",
+   "fieldtype": "Data",
+   "label": "Refund Reference",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -202,7 +239,7 @@
    "link_fieldname": "payment"
   }
  ],
- "modified": "2026-03-06 17:38:02.235044",
+ "modified": "2026-11-17 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "LMS",
  "name": "LMS Payment",

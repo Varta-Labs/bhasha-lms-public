@@ -283,6 +283,7 @@
 		:course="course"
 		:student="currentStudent"
 		:lessons="lessonProgress"
+		@removed="refreshProgress"
 	/>
 </template>
 <script setup lang="ts">
