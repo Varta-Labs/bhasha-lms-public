@@ -1,4 +1,16 @@
-{% macro auth_email(title, button_label, link, security_note=None) -%}
+{# Password-link lifetime from System Settings, e.g. "7 days"; empty when links never expire. #}
+{% macro password_link_lifetime() -%}
+	{%- set seconds = frappe.utils.cint(frappe.db.get_single_value("System Settings", "reset_password_link_expiry_duration")) -%}
+	{%- if seconds and seconds % 86400 == 0 -%}
+		{{ _("1 day") if seconds == 86400 else _("{0} days").format(seconds // 86400) }}
+	{%- elif seconds and seconds % 3600 == 0 -%}
+		{{ _("1 hour") if seconds == 3600 else _("{0} hours").format(seconds // 3600) }}
+	{%- elif seconds -%}
+		{{ _("{0} minutes").format((seconds + 59) // 60) }}
+	{%- endif -%}
+{%- endmacro %}
+
+{% macro auth_email(title, button_label, link, security_note=None, expiry_action=None) -%}
 <div data-bhasha-auth-email="true">
 	<div style="margin-bottom: 8px; color: #6532c5; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;">
 		{{ _("Bhasha Learning") }}
@@ -19,7 +31,19 @@
 			</td>
 		</tr>
 	</table>
-	<div style="padding: 14px 16px; border: 1px solid #eee7f7; border-radius: 10px; background-color: #faf8fd; color: #766e7d; font-size: 12px; line-height: 1.55;">
+	{% if expiry_action %}
+	{% set lifetime = password_link_lifetime() %}
+	{% set forgot_url = frappe.utils.get_url("/login#forgot") %}
+	<div style="margin: 0 0 22px; padding: 14px 16px; border-radius: 10px; background-color: #f4effc; color: #3d2f52; font-size: 14px; line-height: 1.6;">
+		{% if lifetime %}
+		<strong>{{ _("This link works for {0}.").format(lifetime) }}</strong> {{ expiry_action }}
+		{% endif %}
+		{{ _("If it has expired, go to") }}
+		<a href="{{ forgot_url }}" style="color: #6532c5; text-decoration: underline;">{{ forgot_url }}</a>,
+		{{ _("enter your email address and we will send you a new link.") }}
+	</div>
+	{% endif %}
+	<divstyle="padding: 14px 16px; border: 1px solid #eee7f7; border-radius: 10px; background-color: #faf8fd; color: #766e7d; font-size: 12px; line-height: 1.55;">
 		<div style="margin-bottom: 5px; font-weight: 650; color: #5f5667;">
 			{{ _("Button not working? Copy this link into your browser:") }}
 		</div>
